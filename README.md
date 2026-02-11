@@ -127,6 +127,7 @@ cfg = {
     'user': 'root',
     'password': '你的密码',
     'host': '127.0.0.1',
+    'port': 3306,
     'database': 'mlcorpus'
 }
 db = SQLManager.MySQLDatabase(cfg)
