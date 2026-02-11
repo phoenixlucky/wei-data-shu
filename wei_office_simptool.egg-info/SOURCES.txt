@@ -19,3 +19,10 @@ wei_office_simptool.egg-info/SOURCES.txt
 wei_office_simptool.egg-info/dependency_links.txt
 wei_office_simptool.egg-info/requires.txt
 wei_office_simptool.egg-info/top_level.txt
+wei_office_simptool/database/__init__.py
+wei_office_simptool/excel/__init__.py
+wei_office_simptool/mail/__init__.py
+wei_office_simptool/text/__init__.py
+wei_office_simptool/text/_deps.py
+wei_office_simptool/text/analysis.py
+wei_office_simptool/text/forecast.py

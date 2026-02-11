@@ -1,9 +1,9 @@
 Metadata-Version: 2.4
 Name: wei_office_simptool
-Version: 0.2.5
+Version: 0.3.0
 Summary: 这是一个简化办公工作的高效工具库，专注于提供常见任务的快捷处理能力。它包含以下核心功能模块：1. 数据库操作：支持快速查询、插入、更新、删除等操作，让开发者仅需1到3行代码即可完成复杂的数据库交互。2. Excel处理：提供灵活的Excel读写、数据筛选、格式化功能，轻松生成或解析复杂表格。3. 邮件发送：集成邮件发送功能，支持多附件、HTML内容等自定义配置，邮件交互更轻松。4. 日期与时间戳格式转换：高效支持各种日期格式与时间戳的快速转换与计算，适配多场景需求。5. 文件操作：一键实现文件的移动、复制、重命名等常见操作，提升文件管理效率。通过整合这些功能，工具库致力于帮助用户在最少的代码量下完成繁琐任务，极大提升办公自动化与开发效率。
 Author-email: Ethan Wilkins <thisluckyboy@126.com>
-License: MIT
+License-Expression: MIT
 Project-URL: Homepage, https://github.com/phoenixlucky/wei_office_simptool
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
@@ -11,13 +11,50 @@ Requires-Dist: pandas
 Requires-Dist: openpyxl
 Requires-Dist: toml
 Requires-Dist: mysql-connector-python
-Requires-Dist: statsmodels
-Requires-Dist: jieba
-Requires-Dist: wordcloud
+Requires-Dist: requests
+Provides-Extra: analysis
+Requires-Dist: numpy; extra == "analysis"
+Requires-Dist: matplotlib; extra == "analysis"
+Requires-Dist: statsmodels; extra == "analysis"
+Requires-Dist: jieba; extra == "analysis"
+Requires-Dist: wordcloud; extra == "analysis"
+Provides-Extra: excel-client
+Requires-Dist: xlwings; extra == "excel-client"
 
 ## wei_office_simptool
 
 `wei_office_simptool` 一个用于简化办公工作的工具库，提供了数据库操作、Excel 处理、邮件发送、日期时间戳的格式转换、文件移动等常见功能,实现1到3行代码完成相关处理的快捷操作。
+
+#### 📁项目结构
+
+```text
+wei_office_simptool/
+├─ wei_office_simptool/     # 核心包
+│  ├─ database/             # 数据库领域导出
+│  ├─ excel/                # Excel 领域导出
+│  ├─ text/                 # 文本领域导出
+│  └─ mail/                 # 邮件领域导出
+├─ tests/                   # 单元测试
+├─ pyproject.toml           # 包配置
+└─ README.md
+```
+
+结构说明：
+- 核心代码统一放在 `wei_office_simptool/` 包下；
+- 测试代码放在 `tests/`，避免和发布包混在一起；
+- 构建产物（`build/`、`dist/`、`*.egg-info`）不纳入版本控制。
+
+#### 🔁兼容迁移说明（chartsManager 已弃用）
+
+旧路径仍可用（含弃用提示），建议迁移到新路径：
+
+```python
+# 旧：from wei_office_simptool.chartsManager import TrendPredictor, MultipleTrendPredictor, TextAnalysis
+
+# 新：
+from wei_office_simptool.text.forecast import TrendPredictor, MultipleTrendPredictor
+from wei_office_simptool.text.analysis import TextAnalysis
+```
 
 #### 🔌安装与升级
 
@@ -25,6 +62,16 @@ Requires-Dist: wordcloud
 
 ```bash
 pip install wei_office_simptool
+```
+
+安装可选能力（按需安装）：
+
+```bash
+# 文本分析/趋势预测（chartsManager、TextAnalysis 等）
+pip install "wei_office_simptool[analysis]"
+
+# Excel 客户端能力（OpenExcel 的 Excel App 场景）
+pip install "wei_office_simptool[excel-client]"
 ```
 
 使用以下命令升级 `wei_office_simptool`：

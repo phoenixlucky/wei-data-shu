@@ -7,6 +7,10 @@
 ```text
 wei_office_simptool/
 ├─ wei_office_simptool/     # 核心包
+│  ├─ database/             # 数据库领域导出
+│  ├─ excel/                # Excel 领域导出
+│  ├─ text/                 # 文本领域导出
+│  └─ mail/                 # 邮件领域导出
 ├─ tests/                   # 单元测试
 ├─ pyproject.toml           # 包配置
 └─ README.md
@@ -17,12 +21,34 @@ wei_office_simptool/
 - 测试代码放在 `tests/`，避免和发布包混在一起；
 - 构建产物（`build/`、`dist/`、`*.egg-info`）不纳入版本控制。
 
+#### 🔁兼容迁移说明（chartsManager 已弃用）
+
+旧路径仍可用（含弃用提示），建议迁移到新路径：
+
+```python
+# 旧：from wei_office_simptool.chartsManager import TrendPredictor, MultipleTrendPredictor, TextAnalysis
+
+# 新：
+from wei_office_simptool.text.forecast import TrendPredictor, MultipleTrendPredictor
+from wei_office_simptool.text.analysis import TextAnalysis
+```
+
 #### 🔌安装与升级
 
 使用以下命令安装 `wei_office_simptool`：
 
 ```bash
 pip install wei_office_simptool
+```
+
+安装可选能力（按需安装）：
+
+```bash
+# 文本分析/趋势预测（chartsManager、TextAnalysis 等）
+pip install "wei_office_simptool[analysis]"
+
+# Excel 客户端能力（OpenExcel 的 Excel App 场景）
+pip install "wei_office_simptool[excel-client]"
 ```
 
 使用以下命令升级 `wei_office_simptool`：

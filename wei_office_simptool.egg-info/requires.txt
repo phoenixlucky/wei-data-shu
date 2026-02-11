@@ -2,6 +2,14 @@ pandas
 openpyxl
 toml
 mysql-connector-python
+requests
+
+[analysis]
+numpy
+matplotlib
 statsmodels
 jieba
 wordcloud
+
+[excel-client]
+xlwings
