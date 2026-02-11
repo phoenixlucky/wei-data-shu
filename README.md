@@ -79,6 +79,7 @@ from wei_office_simptool import MySQLDatabase
 ```python
 mysql_config = {
     'host': 'your_host',
+    'port': 3306,
     'user': 'your_user',
     'password': 'your_password',
     'database': 'your_database'
