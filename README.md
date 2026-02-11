@@ -2,6 +2,21 @@
 
 `wei_office_simptool` 一个用于简化办公工作的工具库，提供了数据库操作、Excel 处理、邮件发送、日期时间戳的格式转换、文件移动等常见功能,实现1到3行代码完成相关处理的快捷操作。
 
+#### 📁项目结构
+
+```text
+wei_office_simptool/
+├─ wei_office_simptool/     # 核心包
+├─ tests/                   # 单元测试
+├─ pyproject.toml           # 包配置
+└─ README.md
+```
+
+结构说明：
+- 核心代码统一放在 `wei_office_simptool/` 包下；
+- 测试代码放在 `tests/`，避免和发布包混在一起；
+- 构建产物（`build/`、`dist/`、`*.egg-info`）不纳入版本控制。
+
 #### 🔌安装与升级
 
 使用以下命令安装 `wei_office_simptool`：

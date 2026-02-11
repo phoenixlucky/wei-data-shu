@@ -1,5 +1,5 @@
 README.md
-setup.py
+pyproject.toml
 tests/__init__.py
 tests/test_utils.py
 wei_office_simptool/SQLManager.py
@@ -7,6 +7,8 @@ wei_office_simptool/__init__.py
 wei_office_simptool/baseColor.py
 wei_office_simptool/chartsManager.py
 wei_office_simptool/docManager.py
+wei_office_simptool/excelManager.py
+wei_office_simptool/fileManager.py
 wei_office_simptool/mailManager.py
 wei_office_simptool/ollamaManager.py
 wei_office_simptool/stringManager.py
