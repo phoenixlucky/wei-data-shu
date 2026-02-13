@@ -48,7 +48,7 @@ def require_analysis_deps(*dep_names: str) -> None:
     if missing:
         missing_list = ", ".join(missing)
         raise ImportError(
-            f"当前功能缺少依赖: {missing_list}. 请安装可选依赖: pip install wei_office_simptool[analysis]"
+            f"当前功能缺少依赖: {missing_list}. 请安装可选依赖: pip install wei-data-shu[analysis]"
         )
 
 

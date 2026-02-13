@@ -25,7 +25,7 @@ def _require_xlwings():
         import xlwings as xw  # type: ignore
     except ImportError as exc:
         raise ImportError(
-            "OpenExcel 依赖 xlwings。请安装可选依赖: pip install wei_office_simptool[excel-client]"
+            "OpenExcel 依赖 xlwings。请安装可选依赖: pip install wei-data-shu[excel-client]"
         ) from exc
     return xw
 

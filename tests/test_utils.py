@@ -1,6 +1,6 @@
 import unittest
 
-from wei_office_simptool import DateFormat, FileManagement, StringBaba, textCombing
+from wei_data_shu import DateFormat, FileManagement, StringBaba, textCombing
 
 
 class TestStringBaba(unittest.TestCase):

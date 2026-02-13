@@ -1,12 +1,14 @@
-## wei_office_simptool
+## wei-data-shu
 
-`wei_office_simptool` 一个用于简化办公工作的工具库，提供了数据库操作、Excel 处理、邮件发送、日期时间戳的格式转换、文件移动等常见功能,实现1到3行代码完成相关处理的快捷操作。
+Minimal data analysis techniques library
+
+`wei-data-shu` 一个用于简化办公工作的工具库，提供了数据库操作、Excel 处理、邮件发送、日期时间戳的格式转换、文件移动等常见功能,实现1到3行代码完成相关处理的快捷操作。
 
 #### 📁项目结构
 
 ```text
-wei_office_simptool/
-├─ wei_office_simptool/     # 核心包
+wei_data_shu/
+├─ wei_data_shu/     # 核心包
 │  ├─ database/             # 数据库领域导出
 │  ├─ excel/                # Excel 领域导出
 │  ├─ text/                 # 文本领域导出
@@ -17,7 +19,7 @@ wei_office_simptool/
 ```
 
 结构说明：
-- 核心代码统一放在 `wei_office_simptool/` 包下；
+- 核心代码统一放在 `wei_data_shu/` 包下；
 - 测试代码放在 `tests/`，避免和发布包混在一起；
 - 构建产物（`build/`、`dist/`、`*.egg-info`）不纳入版本控制。
 
@@ -26,35 +28,35 @@ wei_office_simptool/
 旧路径仍可用（含弃用提示），建议迁移到新路径：
 
 ```python
-# 旧：from wei_office_simptool.chartsManager import TrendPredictor, MultipleTrendPredictor, TextAnalysis
+# 旧：from wei_data_shu.chartsManager import TrendPredictor, MultipleTrendPredictor, TextAnalysis
 
 # 新：
-from wei_office_simptool.text.forecast import TrendPredictor, MultipleTrendPredictor
-from wei_office_simptool.text.analysis import TextAnalysis
+from wei_data_shu.text.forecast import TrendPredictor, MultipleTrendPredictor
+from wei_data_shu.text.analysis import TextAnalysis
 ```
 
 #### 🔌安装与升级
 
-使用以下命令安装 `wei_office_simptool`：
+使用以下命令安装 `wei-data-shu`：
 
 ```bash
-pip install wei_office_simptool
+pip install wei-data-shu
 ```
 
 安装可选能力（按需安装）：
 
 ```bash
 # 文本分析/趋势预测（chartsManager、TextAnalysis 等）
-pip install "wei_office_simptool[analysis]"
+pip install "wei-data-shu[analysis]"
 
 # Excel 客户端能力（OpenExcel 的 Excel App 场景）
-pip install "wei_office_simptool[excel-client]"
+pip install "wei-data-shu[excel-client]"
 ```
 
-使用以下命令升级 `wei_office_simptool`：
+使用以下命令升级 `wei-data-shu`：
 
 ```bash
-pip install wei_office_simptool --upgrade
+pip install wei-data-shu --upgrade
 ```
 
 #### 🔧功能
@@ -62,7 +64,7 @@ pip install wei_office_simptool --upgrade
 <!-- #### 1. Database 类 （可以连接各种数据库） 弃用
 用于连接和操作数据库。
 ```python
-from wei_office_simptool import Database
+from wei_data_shu import Database
 
 # 示例代码
 db = Database(host='your_host', port=3306, user='your_user', password='your_password', db='your_database')
@@ -73,7 +75,7 @@ print(result)
 #### 1. MySQLDatabase 类
 主要用于Mysql数据库的快速连接
 ```python
-from wei_office_simptool import MySQLDatabase
+from wei_data_shu import MySQLDatabase
 ```
 ##### 📌MySQL 连接配置
 ```python
@@ -120,7 +122,7 @@ db.close()
 ```
 ##### SQLAI智能聊天机器人
 ```python
-from wei_office_simptool import SQLManager
+from wei_data_shu import SQLManager
 
 # 示例代码
 cfg = {
@@ -139,7 +141,7 @@ db.run_ai_chatbot(chat_history_size=5, system_msg="System: You are a helpful AI 
 
 ```python
 from pathlib import Path
-from wei_office_simptool import ExcelManager, ExcelHandler, OpenExcel, ExcelOperation, quick_excel
+from wei_data_shu import ExcelManager, ExcelHandler, OpenExcel, ExcelOperation, quick_excel
 ```
 
 #### 2.1 ExcelManager 类（推荐使用）
@@ -153,7 +155,7 @@ from wei_office_simptool import ExcelManager, ExcelHandler, OpenExcel, ExcelOper
 - DataFrame 支持
 
 ```python
-from wei_office_simptool import ExcelManager
+from wei_data_shu import ExcelManager
 
 # 创建或打开文件
 wb = ExcelManager("data.xlsx")
@@ -179,7 +181,7 @@ wb.close()
 **DataFrame 支持：**
 ```python
 import pandas as pd
-from wei_office_simptool import ExcelManager
+from wei_data_shu import ExcelManager
 
 df = pd.DataFrame({"Name": ["Alice", "Bob"], "Age": [25, 30]})
 
@@ -194,7 +196,7 @@ with ExcelManager("data.xlsx") as wb:
 
 **工作表管理：**
 ```python
-from wei_office_simptool import ExcelManager
+from wei_data_shu import ExcelManager
 
 wb = ExcelManager("data.xlsx")
 
@@ -216,7 +218,7 @@ wb.delete_sheet("OldSheet")
 一行代码完成常用操作：
 
 ```python
-from wei_office_simptool import quick_excel, read_excel_quick
+from wei_data_shu import quick_excel, read_excel_quick
 
 # 快速创建并写入数据
 wb = quick_excel("data.xlsx", [["Name", "Age"], ["Alice", 25]])
@@ -232,7 +234,7 @@ df = read_excel_quick("data.xlsx", as_dataframe=True)
 面向已有文件的读取/写入工具，为兼容性保留。
 
 ```python
-from wei_office_simptool import ExcelHandler
+from wei_data_shu import ExcelHandler
 
 eh = ExcelHandler("data.xlsx")
 
@@ -254,7 +256,7 @@ eh.excel_quit()
 **注意：需要安装 Microsoft Excel**
 
 ```python
-from wei_office_simptool import OpenExcel
+from wei_data_shu import OpenExcel
 
 # 使用上下文管理器自动保存
 with OpenExcel("data.xlsx").my_open() as wb:
@@ -273,7 +275,7 @@ print(sheets)
 提供数据拆分、合并等高级操作。
 
 ```python
-from wei_office_simptool import ExcelOperation
+from wei_data_shu import ExcelOperation
 
 # 按工作表拆分为多个文件
 op = ExcelOperation("data.xlsx", "output_folder")
@@ -289,7 +291,7 @@ csv_path = op.convert_to_csv()
 #### 2.6 完整流水线示例
 ```python
 from pathlib import Path
-from wei_office_simptool import ExcelManager, OpenExcel, ExcelOperation
+from wei_data_shu import ExcelManager, OpenExcel, ExcelOperation
 
 base = Path.cwd()
 f = str(base / "pipeline.xlsx")
@@ -314,7 +316,7 @@ csv_file = op.convert_to_csv()
 用于发送邮件。
 
 ```python
-from wei_office_simptool import eSend
+from wei_data_shu import eSend
 
 # 示例代码
 email_sender = eSend(sender,receiver,username,password,smtpserver='smtp.126.com')
@@ -325,7 +327,7 @@ email_sender.send_email(subject='Your Subject', e_content='Your Email Content', 
 用于获取最近的时间处理。
 
 ```python
-from wei_office_simptool import DateFormat
+from wei_data_shu import DateFormat
 
 # 示例代码
 #timeclass:1日期 date 2时间戳 timestamp 3时刻 time 4datetime
@@ -353,7 +355,7 @@ latest_folder = FileManagement().find_latest_folder(base_directory)
 #### 6. StringBaba 类
 用于清洗字符串。
 ```python
-from wei_office_simptool import StringBaba
+from wei_data_shu import StringBaba
 
 str="""
 萝卜
@@ -365,7 +367,7 @@ formatted_str =StringBaba(str1).format_string_sql()
 #### 7. TextAnalysis 类
 用于进行词频分析。
 ```python
-from wei_office_simptool import TextAnalysis
+from wei_data_shu import TextAnalysis
 # 示例用法
 data = {
     'Category': ['A', 'A', 'B', 'D', 'C'],
@@ -392,7 +394,7 @@ ta.plot_wordclouds(word_freqs, titles)
 0.0.29新增，用于连接Ollama的AI接口
 
 ```python
-from wei_office_simptool import ChatBot
+from wei_data_shu import ChatBot
 
 bot = ChatBot(api_url='http://localhost:11434/api/chat')
 
@@ -415,7 +417,7 @@ print("聊天结束。")
 用于发送每日报告邮件，支持HTML和纯文本格式。
 
 ```python
-from wei_office_simptool import DailyEmailReport
+from wei_data_shu import DailyEmailReport
 
 # 初始化 DailyEmailReport 实例
 email_reporter = DailyEmailReport(
@@ -466,12 +468,12 @@ email_reporter.send_daily_report("HTML Report", html_content=html_content)
 ## Contributing / 参与贡献
 
 **English:** We welcome contributions! If you have any questions, suggestions, or improvements, please feel free to:
-- [Submit an Issue](https://github.com/yourusername/wei_office_simptool/issues) - Report bugs or request features
-- [Submit a Pull Request](https://github.com/yourusername/wei_office_simptool/pulls) - Contribute code
+- [Submit an Issue](https://github.com/yourusername/wei-data-shu/issues) - Report bugs or request features
+- [Submit a Pull Request](https://github.com/yourusername/wei-data-shu/pulls) - Contribute code
 
 **中文:** 我们欢迎并感谢您的贡献！如果您有任何问题、建议或改进，请随时：
-- [提交 Issue](https://github.com/yourusername/wei_office_simptool/issues) - 报告 bug 或提出功能建议
-- [提交 Pull Request](https://github.com/yourusername/wei_office_simptool/pulls) - 贡献代码
+- [提交 Issue](https://github.com/yourusername/wei-data-shu/issues) - 报告 bug 或提出功能建议
+- [提交 Pull Request](https://github.com/yourusername/wei-data-shu/pulls) - 贡献代码
 
 ---
 

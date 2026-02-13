@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "wei_office_simptool"
-version = "0.3.0"
-description = "这是一个简化办公工作的高效工具库，专注于提供常见任务的快捷处理能力。它包含以下核心功能模块：1. 数据库操作：支持快速查询、插入、更新、删除等操作，让开发者仅需1到3行代码即可完成复杂的数据库交互。2. Excel处理：提供灵活的Excel读写、数据筛选、格式化功能，轻松生成或解析复杂表格。3. 邮件发送：集成邮件发送功能，支持多附件、HTML内容等自定义配置，邮件交互更轻松。4. 日期与时间戳格式转换：高效支持各种日期格式与时间戳的快速转换与计算，适配多场景需求。5. 文件操作：一键实现文件的移动、复制、重命名等常见操作，提升文件管理效率。通过整合这些功能，工具库致力于帮助用户在最少的代码量下完成繁琐任务，极大提升办公自动化与开发效率。"
+name = "wei-data-shu"
+version = "0.3.2"
+description = "Minimal data analysis techniques library"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -34,9 +34,9 @@ excel-client = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/phoenixlucky/wei_office_simptool"
+Homepage = "https://github.com/phoenixlucky/wei-data-shu"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["wei_office_simptool*"]
+include = ["wei_data_shu*"]
 exclude = ["tests*", "build*", "dist*", "*.egg-info*"]

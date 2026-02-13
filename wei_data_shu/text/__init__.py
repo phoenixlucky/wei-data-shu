@@ -17,9 +17,9 @@ __all__ = [
 ]
 
 _OPTIONAL_EXPORTS = {
-    "TrendPredictor": ("wei_office_simptool.text.forecast", "TrendPredictor"),
-    "MultipleTrendPredictor": ("wei_office_simptool.text.forecast", "MultipleTrendPredictor"),
-    "TextAnalysis": ("wei_office_simptool.text.analysis", "TextAnalysis"),
+    "TrendPredictor": ("wei_data_shu.text.forecast", "TrendPredictor"),
+    "MultipleTrendPredictor": ("wei_data_shu.text.forecast", "MultipleTrendPredictor"),
+    "TextAnalysis": ("wei_data_shu.text.analysis", "TextAnalysis"),
 }
 
 
