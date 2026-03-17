@@ -7,7 +7,27 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 - minor releases may include breaking changes before `1.0.0`
 - patch releases are reserved for backwards-compatible fixes and documentation-only corrections
 
+## [0.5.1] - 2026-03-17
+
+### Added
+
+- added a practical "5-minute quick start" example to the README using `ExcelManager`, `DateFormat`, `search_colors()`, and `generate_password()`
+
+### Changed
+
+- improved README usage documentation structure for faster onboarding
+- bumped package version to `0.5.1`
+
 ## [0.5.0] - 2026-03-17
+
+### Added
+
+- added a lightweight CLI entrypoint: `wei-data-shu` and `python -m wei_data_shu`
+- added `wei_data_shu.utils.generate_password` for readable password generation with ambiguous characters removed
+- added searchable color metadata with Chinese display names and `search_colors()` support for English, Chinese, and HEX queries
+- added `wei_data_shu.utils` for shared helpers like `fn_timer`, `mav_colors`, and `generate_password`
+- added architecture documentation under `docs/plans/`
+- added domain-level tests for root package, AI, database, docs, Excel, files, mail, text, and utils
 
 ### Changed
 
@@ -21,12 +41,6 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 
 - removed legacy flat modules such as `SQLManager.py`, `excelManager.py`, `fileManager.py`, `mailManager.py`, `ollamaManager.py`, `stringManager.py`, `textManager.py`, `timingTool.py`, `baseColor.py`, and `chartsManager.py`
 - removed support for the old root-level object import style in documentation and public architecture
-
-### Added
-
-- added `wei_data_shu.utils` for shared helpers like `fn_timer` and `mav_colors`
-- added architecture documentation under `docs/plans/`
-- added domain-level tests for root package, AI, database, docs, Excel, files, mail, text, and utils
 
 ### Migration Notes
 
@@ -49,4 +63,3 @@ from wei_data_shu.text import DateFormat
 ### Changed
 
 - updated the project to publish as `wei-data-shu`
-

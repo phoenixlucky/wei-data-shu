@@ -9,12 +9,16 @@ tests/test_files_domain.py
 tests/test_mail_domain.py
 tests/test_root_package.py
 tests/test_text_domain.py
+tests/test_utils_cli.py
 tests/test_utils_domain.py
 wei_data_shu/__init__.py
+wei_data_shu/__main__.py
 wei_data_shu/_api.py
+wei_data_shu/cli.py
 wei_data_shu.egg-info/PKG-INFO
 wei_data_shu.egg-info/SOURCES.txt
 wei_data_shu.egg-info/dependency_links.txt
+wei_data_shu.egg-info/entry_points.txt
 wei_data_shu.egg-info/requires.txt
 wei_data_shu.egg-info/top_level.txt
 wei_data_shu/ai/__init__.py
@@ -42,4 +46,5 @@ wei_data_shu/text/core.py
 wei_data_shu/text/forecast.py
 wei_data_shu/utils/__init__.py
 wei_data_shu/utils/colors.py
+wei_data_shu/utils/passwords.py
 wei_data_shu/utils/timing.py

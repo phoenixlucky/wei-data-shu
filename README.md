@@ -1,32 +1,145 @@
 ## wei-data-shu
 
-Minimal data analysis techniques library
+Domain-oriented office automation and data utility toolkit.
 
-`wei-data-shu` 一个用于简化办公工作的工具库，提供了数据库操作、Excel 处理、邮件发送、日期时间戳的格式转换、文件移动等常见功能,实现1到3行代码完成相关处理的快捷操作。
+`wei-data-shu` 是一个面向办公自动化和数据处理的 Python 工具库，覆盖数据库、Excel、文件处理、文本分析、邮件发送、AI 对话和常用工具函数等场景。
 
-当前文档对应版本：`0.5.0`
+当前文档对应版本：`0.5.1`
 
-本次版本的重点是包结构定型：
+当前版本的使用原则：
 - 根包 `wei_data_shu` 只暴露领域包
 - 所有公开用法统一为 `wei_data_shu.<domain>` 导入
 - 历史平铺模块路径已移除
 
-#### 📁项目结构
+## 快速开始
+
+### 安装
+
+```bash
+pip install wei-data-shu
+```
+
+按需安装可选能力：
+
+```bash
+# 文本分析 / 词云 / 趋势预测
+pip install "wei-data-shu[analysis]"
+
+# 需要通过本机 Excel 应用操作工作簿
+pip install "wei-data-shu[excel-client]"
+```
+
+升级：
+
+```bash
+pip install --upgrade wei-data-shu
+```
+
+### 导入方式
+
+```python
+from wei_data_shu.database import MySQLDatabase
+from wei_data_shu.excel import ExcelManager
+from wei_data_shu.files import FileManagement
+from wei_data_shu.mail import DailyEmailReport
+from wei_data_shu.text import DateFormat, StringBaba, TextAnalysis
+from wei_data_shu.ai import ChatBot
+from wei_data_shu.utils import fn_timer, generate_password, mav_colors, search_colors
+```
+
+### 命令行
+
+安装后可直接使用：
+
+```bash
+wei-data-shu --help
+python -m wei_data_shu --help
+```
+
+常用示例：
+
+```bash
+wei-data-shu colors
+wei-data-shu colors mint
+wei-data-shu colors 薄荷
+wei-data-shu password --count 10 --length 13
+```
+
+### 5 分钟上手
+
+下面这个示例不依赖数据库、邮件服务或本机 Excel，安装后可以直接运行。它会完成 4 件事：
+- 生成当天报表文件名
+- 创建一个 Excel 文件并写入示例数据
+- 读取颜色表中的中文颜色信息
+- 生成一个不含易混淆字符的安全密码
+
+```python
+from pathlib import Path
+
+from wei_data_shu.excel import ExcelManager
+from wei_data_shu.text import DateFormat
+from wei_data_shu.utils import generate_password, search_colors
+
+today = DateFormat(interval_day=0, timeclass="date").get_timeparameter(Format="%Y-%m-%d")
+report_path = Path(f"demo-report-{today}.xlsx")
+
+rows = [
+    ["日期", "渠道", "销售额"],
+    [today, "电商", 12580],
+    [today, "门店", 9680],
+    [today, "分销", 7320],
+]
+
+with ExcelManager(str(report_path)) as wb:
+    wb.write_sheet("日报", rows, start_row=1, start_col=1)
+    summary = wb.read_sheet("日报", 1, 1)
+
+mint_colors = search_colors("薄荷")
+temp_password = generate_password(13)
+
+print("报表文件：", report_path.resolve())
+print("首行数据：", summary[0])
+print("颜色搜索：", mint_colors[0]["hex"], mint_colors[0]["name"], mint_colors[0]["name_zh"])
+print("临时密码：", temp_password)
+```
+
+运行后你会得到一个 `demo-report-YYYY-MM-DD.xlsx` 文件，并在终端看到类似输出：
+
+```text
+报表文件： D:\path\to\demo-report-2026-03-17.xlsx
+首行数据： ['日期', '渠道', '销售额']
+颜色搜索： #5BC49F mint green 薄荷绿
+临时密码： 8rY#FvQ7mK2$T
+```
+
+## 功能概览
+
+| 领域 | 导入路径 | 主要用途 |
+| --- | --- | --- |
+| 数据库 | `wei_data_shu.database` | MySQL 连接、查询、执行 SQL |
+| Excel | `wei_data_shu.excel` | 读写工作簿、样式、拆分合并、Excel App 操作 |
+| 文件 | `wei_data_shu.files` | 查找最新文件、复制、重命名 |
+| 邮件 | `wei_data_shu.mail` | 发送日报、HTML 邮件 |
+| 文本 | `wei_data_shu.text` | 日期处理、字符串清洗、词频分析 |
+| AI | `wei_data_shu.ai` | 对接 Ollama 聊天接口 |
+| 工具 | `wei_data_shu.utils` | 计时器、颜色表、密码生成、颜色搜索 |
+
+## 项目结构
 
 ```text
 wei_data_shu/
-├─ wei_data_shu/     # 核心包
+├─ wei_data_shu/            # 核心包
 │  ├─ _api.py               # 统一公开 API 注册表
-│  ├─ ai/                   # AI 能力领域导出
-│  ├─ database/             # 数据库领域导出
-│  ├─ docs/                 # 文档/工作流领域导出
-│  ├─ excel/                # Excel 领域导出
-│  ├─ files/                # 文件处理领域导出
-│  ├─ mail/                 # 邮件领域导出
-│  ├─ text/                 # 文本领域导出
-│  └─ utils/                # 通用工具领域导出
+│  ├─ ai/                   # AI 能力
+│  ├─ database/             # 数据库能力
+│  ├─ docs/                 # 文档工作流导出
+│  ├─ excel/                # Excel 能力
+│  ├─ files/                # 文件处理能力
+│  ├─ mail/                 # 邮件能力
+│  ├─ text/                 # 文本处理能力
+│  └─ utils/                # 通用工具
 ├─ tests/                   # 单元测试
-├─ docs/plans/              # 架构与设计文档
+├─ docs/plans/              # 架构设计文档
 ├─ pyproject.toml           # 包配置
 └─ README.md
 ```
@@ -38,263 +151,173 @@ wei_data_shu/
 - 测试代码放在 `tests/`，避免和发布包混在一起；
 - 构建产物（`build/`、`dist/`、`*.egg-info`）不纳入版本控制。
 
-#### 🔁导入规范
+## 用法示例
 
-当前版本只支持领域子包导入，示例和文档统一使用以下形式：
+### 1. MySQLDatabase
+
+用于快速连接 MySQL、执行 SQL、读取结果。
 
 ```python
 from wei_data_shu.database import MySQLDatabase
-from wei_data_shu.excel import ExcelManager
-from wei_data_shu.files import FileManagement
-from wei_data_shu.mail import DailyEmailReport
-from wei_data_shu.text import DateFormat, StringBaba, textCombing
-from wei_data_shu.ai import ChatBot
-from wei_data_shu.utils import fn_timer, mav_colors
-```
 
-#### 🔌安装与升级
-
-使用以下命令安装 `wei-data-shu`：
-
-```bash
-pip install wei-data-shu
-```
-
-安装可选能力（按需安装）：
-
-```bash
-# 文本分析/趋势预测（TextAnalysis、TrendPredictor 等）
-pip install "wei-data-shu[analysis]"
-
-# Excel 客户端能力（OpenExcel 的 Excel App 场景）
-pip install "wei-data-shu[excel-client]"
-```
-
-使用以下命令升级 `wei-data-shu`：
-
-```bash
-pip install wei-data-shu --upgrade
-```
-
-#### 🔧功能
-
-#### 1. MySQLDatabase 类
-主要用于Mysql数据库的快速连接
-```python
-from wei_data_shu.database import MySQLDatabase
-```
-##### 📌MySQL 连接配置
-```python
 mysql_config = {
-    'host': 'your_host',
-    'port': 3306,
-    'user': 'your_user',
-    'password': 'your_password',
-    'database': 'your_database'
+    "host": "your_host",
+    "port": 3306,
+    "user": "your_user",
+    "password": "your_password",
+    "database": "your_database",
 }
-```
-##### ✏️创建 MySQLDatabase 对象
-```python
+
 db = MySQLDatabase(mysql_config)
-```
-##### 📥插入数据
-```python
+
 insert_query = "INSERT INTO your_table (column1, column2) VALUES (%s, %s)"
 insert_params = ("value1", "value2")
 db.execute_query(insert_query, insert_params)
-```
-##### 🔍查询数据
-```python
+
 select_query = "SELECT * FROM your_table"
 results = db.fetch_query(select_query)
 for row in results:
     print(row)
-```
-##### ⌛更新数据
-```python
+
 update_query = "UPDATE your_table SET column1 = %s WHERE column2 = %s"
 update_params = ("new_value", "value2")
 db.execute_query(update_query, update_params)
-```
-##### 🔪删除数据
-```python
+
 delete_query = "DELETE FROM your_table WHERE column1 = %s"
 delete_params = ("new_value",)
 db.execute_query(delete_query, delete_params)
-```
-##### 🚪关闭连接
-```python
+
 db.close()
 ```
-##### SQLAI智能聊天机器人
+
+如果你希望在数据库对象上直接启用 AI 聊天：
+
 ```python
 from wei_data_shu.database import MySQLDatabase
 
-# 示例代码
 cfg = {
-    'user': 'root',
-    'password': '你的密码',
-    'host': '127.0.0.1',
-    'port': 3306,
-    'database': 'mlcorpus'
+    "user": "root",
+    "password": "你的密码",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "database": "mlcorpus",
 }
 db = MySQLDatabase(cfg)
 db.run_ai_chatbot(chat_history_size=5, system_msg="System: You are a helpful AI assistant.")
 ```
 
-#### 2. Excel 相关类
-提供完整的 Excel 文件创建、读取、写入和操作功能。
+### 2. Excel
+
+Excel 相关能力分成 4 类：日常读写、快捷方法、Excel App 操作、高级文件处理。
+
+推荐优先使用 `ExcelManager`。
 
 ```python
 from pathlib import Path
-from wei_data_shu.excel import ExcelManager, ExcelHandler, OpenExcel, ExcelOperation, quick_excel
+from wei_data_shu.excel import ExcelManager, ExcelHandler, OpenExcel, ExcelOperation, quick_excel, read_excel_quick
 ```
 
-#### 2.1 ExcelManager 类（推荐使用）
-轻量级 Excel 工作簿管理类，基于 openpyxl，无需安装 Excel 应用。
-
-**特性：**
-- 自动创建不存在的文件
-- 支持多工作表操作
-- 快速读写数据
-- 自动应用样式
-- DataFrame 支持
+#### 2.1 ExcelManager
 
 ```python
 from wei_data_shu.excel import ExcelManager
 
-# 创建或打开文件
 wb = ExcelManager("data.xlsx")
 
-# 写入数据（自动应用样式）
 wb.write_sheet("Sheet1", [["Name", "Age"], ["Alice", 25]], start_row=1, start_col=1)
-
-# 快速写入（自动计算范围）
 wb.fast_write("Sheet1", [["Bob", 30]], start_row=3, start_col=1)
-
-# 读取数据
 data = wb.read_sheet("Sheet1", 1, 1)
 
-# 使用上下文管理器（自动保存）
 with ExcelManager("data.xlsx") as wb:
     wb.fast_write("Sheet1", [[1, 2], [3, 4]], 1, 1)
 
-# 保存并关闭
 wb.save()
 wb.close()
 ```
 
-**DataFrame 支持：**
+DataFrame 支持：
+
 ```python
 import pandas as pd
 from wei_data_shu.excel import ExcelManager
 
 df = pd.DataFrame({"Name": ["Alice", "Bob"], "Age": [25, 30]})
 
-# DataFrame 写入 Excel
 with ExcelManager("data.xlsx") as wb:
     wb.write_dataframe("Sheet1", df)
 
-# Excel 读取为 DataFrame
 with ExcelManager("data.xlsx") as wb:
     df = wb.read_dataframe("Sheet1")
 ```
 
-**工作表管理：**
+工作表管理：
+
 ```python
 from wei_data_shu.excel import ExcelManager
 
 wb = ExcelManager("data.xlsx")
 
-# 创建新工作表
 wb.create_sheet("NewSheet")
-
-# 获取工作表信息
 info = wb.get_sheet_info("Sheet1")
 print(info)
-
-# 复制工作表
 wb.copy_sheet("Sheet1", "Sheet1_Copy")
-
-# 删除工作表
 wb.delete_sheet("OldSheet")
 ```
 
-#### 2.2 快速创建与读取
-一行代码完成常用操作：
+#### 2.2 quick_excel / read_excel_quick
 
 ```python
 from wei_data_shu.excel import quick_excel, read_excel_quick
 
-# 快速创建并写入数据
 wb = quick_excel("data.xlsx", [["Name", "Age"], ["Alice", 25]])
-
-# 快速读取为列表
 data = read_excel_quick("data.xlsx")
-
-# 快速读取为 DataFrame
 df = read_excel_quick("data.xlsx", as_dataframe=True)
 ```
 
-#### 2.3 ExcelHandler 类
-面向已有文件的读取/写入工具。
+#### 2.3 ExcelHandler
 
 ```python
 from wei_data_shu.excel import ExcelHandler
 
 eh = ExcelHandler("data.xlsx")
 
-# 写入指定范围
 eh.excel_write("Sheet1", [[1, 2], [3, 4]], 1, 1, 2, 2)
-
-# 读取指定范围
 data = eh.excel_read("Sheet1", 1, 1, 2, 2)
-
-# 另存为
 eh.excel_save_as("output.xlsx")
-
-# 关闭
 eh.excel_quit()
 ```
 
-#### 2.4 OpenExcel 类（Excel 应用操作）
-通过 Excel 应用打开工作簿，适合需要 RefreshAll 的场景。
-**注意：需要安装 Microsoft Excel**
+#### 2.4 OpenExcel
+
+适合需要通过本机 Excel 应用执行 `RefreshAll()` 等操作。
+注意：需要安装 Microsoft Excel。
 
 ```python
 from wei_data_shu.excel import OpenExcel
 
-# 使用上下文管理器自动保存
 with OpenExcel("data.xlsx").my_open() as wb:
     wb.fast_write("Sheet1", [[1, 2], [3, 4]], 1, 1)
 
-# 刷新数据连接（需要 Excel 应用）
 with OpenExcel("data.xlsx").open_save_Excel() as appwb:
     appwb.api.RefreshAll()
 
-# 列出工作表并按关键词过滤
 sheets = OpenExcel("data.xlsx").file_show(filter=["sheet", "报表"])
 print(sheets)
 ```
 
-#### 2.5 ExcelOperation 类（数据处理）
-提供数据拆分、合并等高级操作。
+#### 2.5 ExcelOperation
 
 ```python
 from wei_data_shu.excel import ExcelOperation
 
-# 按工作表拆分为多个文件
 op = ExcelOperation("data.xlsx", "output_folder")
 files = op.split_table()
-
-# 合并多个文件
 op.merge_tables(["file1.xlsx", "file2.xlsx"], "merged.xlsx")
-
-# 转换为 CSV
 csv_path = op.convert_to_csv()
 ```
 
 #### 2.6 完整流水线示例
+
 ```python
 from pathlib import Path
 from wei_data_shu.excel import ExcelManager, OpenExcel, ExcelOperation
@@ -302,141 +325,34 @@ from wei_data_shu.excel import ExcelManager, OpenExcel, ExcelOperation
 base = Path.cwd()
 f = str(base / "pipeline.xlsx")
 
-# 1) 创建并写入数据
 with ExcelManager(f) as wb:
     wb.fast_write("Sheet1", [["Name", "Age"], ["Alice", 25], ["Bob", 30]], 1, 1)
 
-# 2) 通过 Excel 应用刷新（需要本机 Excel）
 with OpenExcel(f).open_save_Excel() as appwb:
     appwb.api.RefreshAll()
 
-# 3) 拆分工作表到单文件
 op = ExcelOperation(f, str(base / "output"))
 op.split_table()
 
-# 4) 转换为 CSV
 csv_file = op.convert_to_csv()
 ```
 
-#### 3. DailyEmailReport 类
-用于发送邮件。
+### 3. DailyEmailReport
 
-```python
-from wei_data_shu.mail import DailyEmailReport
-```
-
-#### 4. DateFormat 类
-用于获取最近的时间处理。
-
-```python
-from wei_data_shu.text import DateFormat
-
-# 示例代码
-#timeclass:1日期 date 2时间戳 timestamp 3时刻 time 4datetime
-#获取当日的日期字符串
-x=DateFormat(interval_day=0,timeclass='date').get_timeparameter(Format="%Y-%m-%d")
-print(x)
-
-# 格式化df的表的列属性
-df = DateFormat(interval_day=0,timeclass='date').datetime_standar(df, '日期')
-```
-
-#### 5. FileManagement 类
-用于文件移动并且重命名。
-```python
-from wei_data_shu.files import FileManagement
-
-#latest_folder2 当前目录
-#destination_directory 目标目录
-#target_files2 文件名
-#add_prefix 重命名去除数字
-#file_type 文件类型
-FileManagement().copy_files(latest_folder2, destination_directory, target_files2, rename=True,file_type="xls")
-#寻找最新文件夹
-latest_folder = FileManagement().find_latest_folder(base_directory)
-```
-
-#### 6. StringBaba 类
-用于清洗字符串。
-```python
-from wei_data_shu.text import StringBaba
-
-str="""
-萝卜
-白菜
-"""
-formatted_str = StringBaba(str).format_string_sql()
-```
-
-#### 7. TextAnalysis 类
-用于进行词频分析。
-```python
-from wei_data_shu.text import TextAnalysis
-import pandas as pd
-
-# 示例用法
-data = {
-    'Category': ['A', 'A', 'B', 'D', 'C'],
-    'Text': [
-        '我爱自然语言处理',
-        '自然语言处理很有趣',
-        '机器学习是一门很有前途的学科',
-        '我对机器学习很感兴趣',
-        '数据科学包含很多有趣的内容'
-    ]
-}
-
-df = pd.DataFrame(data)
-
-ta = TextAnalysis(df)
-result = ta.get_word_freq(group_col='Category', text_col='Text', agg_func=' '.join)
-
-word_freqs = result['word_freq'].tolist()
-titles = result['Category'].tolist()
-
-ta.plot_wordclouds(word_freqs, titles)
-```
-#### 8. ChatBot类 
-0.0.29新增，用于连接Ollama的AI接口
-
-```python
-from wei_data_shu.ai import ChatBot
-
-bot = ChatBot(api_url='http://localhost:11434/api/chat')
-
-print("开始聊天（输入 'exit' 退出，输入 'new' 新建聊天）")
-while True:
-    user_input = input("你: ")
-    if user_input.lower() == 'exit':
-        break
-    elif user_input.lower() == 'new':
-        bot.start_new_chat()
-        continue
-
-    # 默认使用流式响应，可以根据需要选择非流式响应
-    bot.send_message(user_input, stream=True)
-
-print("聊天结束。")
-```
-
-## 9 DailyEmailReport 类
-用于发送每日报告邮件，支持HTML和纯文本格式。
+用于发送纯文本或 HTML 邮件。
 
 ```python
 from wei_data_shu.mail import DailyEmailReport
 
-# 初始化 DailyEmailReport 实例
 email_reporter = DailyEmailReport(
-    email_host='smtp.example.com',
+    email_host="smtp.example.com",
     email_port=465,
-    email_username='your_email@example.com',
-    email_password='your_password'
+    email_username="your_email@example.com",
+    email_password="your_password",
 )
 
-# 添加收件人
-email_reporter.add_receiver('recipient@example.com')
+email_reporter.add_receiver("recipient@example.com")
 
-# 发送纯文本邮件
 text_content = """
 Hello,
 
@@ -449,7 +365,6 @@ Your Name
 """
 email_reporter.send_daily_report("Daily Report", text_content)
 
-# 发送HTML邮件 - 方式1
 html_content = """
 <html>
   <body>
@@ -466,16 +381,108 @@ html_content = """
 </html>
 """
 email_reporter.send_daily_report("HTML Report", html_content, is_html=True)
-
-# 发送HTML邮件 - 方式2
-email_reporter.send_daily_report("HTML Report", html_content=html_content)
 ```
 
-## 10 Utils 工具
-提供通用计时器和调色板等轻量工具。
+### 4. DateFormat
+
+用于快速生成日期、时间、时间戳，以及对 DataFrame 列进行格式化。
 
 ```python
-from wei_data_shu.utils import fn_timer, mav_colors
+from wei_data_shu.text import DateFormat
+
+x = DateFormat(interval_day=0, timeclass="date").get_timeparameter(Format="%Y-%m-%d")
+print(x)
+
+df = DateFormat(interval_day=0, timeclass="date").datetime_standar(df, "日期")
+```
+
+### 5. FileManagement
+
+用于寻找最新目录、复制文件和批量重命名。
+
+```python
+from wei_data_shu.files import FileManagement
+
+FileManagement().copy_files(
+    latest_folder2,
+    destination_directory,
+    target_files2,
+    rename=True,
+    file_type="xls",
+)
+
+latest_folder = FileManagement().find_latest_folder(base_directory)
+```
+
+### 6. StringBaba
+
+用于字符串清洗和 SQL 拼接辅助。
+
+```python
+from wei_data_shu.text import StringBaba
+
+text = """
+萝卜
+白菜
+"""
+formatted_str = StringBaba(text).format_string_sql()
+```
+
+### 7. TextAnalysis
+
+用于中文文本词频分析和词云绘制。
+
+```python
+import pandas as pd
+from wei_data_shu.text import TextAnalysis
+
+data = {
+    "Category": ["A", "A", "B", "D", "C"],
+    "Text": [
+        "我爱自然语言处理",
+        "自然语言处理很有趣",
+        "机器学习是一门很有前途的学科",
+        "我对机器学习很感兴趣",
+        "数据科学包含很多有趣的内容",
+    ],
+}
+
+df = pd.DataFrame(data)
+ta = TextAnalysis(df)
+result = ta.get_word_freq(group_col="Category", text_col="Text", agg_func=" ".join)
+
+word_freqs = result["word_freq"].tolist()
+titles = result["Category"].tolist()
+ta.plot_wordclouds(word_freqs, titles)
+```
+
+### 8. ChatBot
+
+用于连接 Ollama 聊天接口。
+
+```python
+from wei_data_shu.ai import ChatBot
+
+bot = ChatBot(api_url="http://localhost:11434/api/chat")
+
+print("开始聊天（输入 'exit' 退出，输入 'new' 新建聊天）")
+while True:
+    user_input = input("你: ")
+    if user_input.lower() == "exit":
+        break
+    if user_input.lower() == "new":
+        bot.start_new_chat()
+        continue
+
+    bot.send_message(user_input, stream=True)
+```
+
+### 9. Utils
+
+提供通用计时器、调色板、密码生成和颜色搜索能力。
+
+```python
+from wei_data_shu.utils import fn_timer, generate_password, mav_colors, search_colors
 
 @fn_timer
 def build_report():
@@ -483,7 +490,29 @@ def build_report():
 
 result, elapsed = build_report()
 print(result, elapsed)
+print(generate_password())
 print(mav_colors[:3])
+print(search_colors("薄荷"))
+```
+
+颜色检索支持英文、HEX、中文关键字，并返回中英文名称：
+
+```python
+from wei_data_shu.utils import search_colors
+
+print(search_colors("mint"))
+print(search_colors("薄荷"))
+print(search_colors("#5BC49F"))
+```
+
+命令行查看颜色和生成密码：
+
+```bash
+wei-data-shu colors
+wei-data-shu colors mint
+wei-data-shu colors 薄荷
+wei-data-shu colors "#5BC49F"
+wei-data-shu password --count 50 --length 13
 ```
 
 ## Contributing / 参与贡献

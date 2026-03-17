@@ -2,11 +2,14 @@
 
 from importlib import import_module
 
-__all__ = ["fn_timer", "mav_colors"]
+__all__ = ["fn_timer", "mav_colors", "color_records", "search_colors", "generate_password"]
 
 _EXPORTS = {
     "fn_timer": ("wei_data_shu.utils.timing", "fn_timer"),
     "mav_colors": ("wei_data_shu.utils.colors", "mav_colors"),
+    "color_records": ("wei_data_shu.utils.colors", "color_records"),
+    "search_colors": ("wei_data_shu.utils.colors", "search_colors"),
+    "generate_password": ("wei_data_shu.utils.passwords", "generate_password"),
 }
 
 

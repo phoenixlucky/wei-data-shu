@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wei-data-shu"
-version = "0.5.0"
+version = "0.5.1"
 description = "Domain-oriented office automation and data utility toolkit"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,6 +32,9 @@ dependencies = [
   "mysql-connector-python",
   "requests"
 ]
+
+[project.scripts]
+wei-data-shu = "wei_data_shu.cli:main"
 
 [project.optional-dependencies]
 analysis = [
