@@ -1,9 +1,6 @@
-"""Text domain exports with lazy optional analysis imports."""
+"""Text domain exports."""
 
 from importlib import import_module
-
-from ..stringManager import DateFormat, StringBaba, decrypt, eFormat
-from ..textManager import textCombing
 
 __all__ = [
     "StringBaba",
@@ -16,7 +13,12 @@ __all__ = [
     "TextAnalysis",
 ]
 
-_OPTIONAL_EXPORTS = {
+_EXPORTS = {
+    "StringBaba": ("wei_data_shu.text.core", "StringBaba"),
+    "DateFormat": ("wei_data_shu.text.core", "DateFormat"),
+    "decrypt": ("wei_data_shu.text.core", "decrypt"),
+    "eFormat": ("wei_data_shu.text.core", "eFormat"),
+    "textCombing": ("wei_data_shu.text.combiner", "textCombing"),
     "TrendPredictor": ("wei_data_shu.text.forecast", "TrendPredictor"),
     "MultipleTrendPredictor": ("wei_data_shu.text.forecast", "MultipleTrendPredictor"),
     "TextAnalysis": ("wei_data_shu.text.analysis", "TextAnalysis"),
@@ -24,7 +26,7 @@ _OPTIONAL_EXPORTS = {
 
 
 def __getattr__(name: str):
-    target = _OPTIONAL_EXPORTS.get(name)
+    target = _EXPORTS.get(name)
     if target is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
     module_name, attr_name = target

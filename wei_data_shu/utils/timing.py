@@ -1,5 +1,11 @@
+"""Timing helpers."""
+
+from __future__ import annotations
+
 import time
 from functools import wraps
+
+
 def fn_timer(func):
     @wraps(func)
     def function_timer(*args, **kwargs):
@@ -11,3 +17,6 @@ def fn_timer(func):
         return result, elapsed_time
 
     return function_timer
+
+
+__all__ = ["fn_timer"]

@@ -4,35 +4,52 @@ Minimal data analysis techniques library
 
 `wei-data-shu` 一个用于简化办公工作的工具库，提供了数据库操作、Excel 处理、邮件发送、日期时间戳的格式转换、文件移动等常见功能,实现1到3行代码完成相关处理的快捷操作。
 
+当前文档对应版本：`0.5.0`
+
+本次版本的重点是包结构定型：
+- 根包 `wei_data_shu` 只暴露领域包
+- 所有公开用法统一为 `wei_data_shu.<domain>` 导入
+- 历史平铺模块路径已移除
+
 #### 📁项目结构
 
 ```text
 wei_data_shu/
 ├─ wei_data_shu/     # 核心包
+│  ├─ _api.py               # 统一公开 API 注册表
+│  ├─ ai/                   # AI 能力领域导出
 │  ├─ database/             # 数据库领域导出
+│  ├─ docs/                 # 文档/工作流领域导出
 │  ├─ excel/                # Excel 领域导出
+│  ├─ files/                # 文件处理领域导出
+│  ├─ mail/                 # 邮件领域导出
 │  ├─ text/                 # 文本领域导出
-│  └─ mail/                 # 邮件领域导出
+│  └─ utils/                # 通用工具领域导出
 ├─ tests/                   # 单元测试
+├─ docs/plans/              # 架构与设计文档
 ├─ pyproject.toml           # 包配置
 └─ README.md
 ```
 
 结构说明：
 - 核心代码统一放在 `wei_data_shu/` 包下；
+- 根包通过 `_api.py` 统一维护公开导出，且根包只暴露领域包；
+- 优先使用按领域划分的子包，如 `wei_data_shu.excel`、`wei_data_shu.text`、`wei_data_shu.files`；
 - 测试代码放在 `tests/`，避免和发布包混在一起；
 - 构建产物（`build/`、`dist/`、`*.egg-info`）不纳入版本控制。
 
-#### 🔁兼容迁移说明（chartsManager 已弃用）
+#### 🔁导入规范
 
-旧路径仍可用（含弃用提示），建议迁移到新路径：
+当前版本只支持领域子包导入，示例和文档统一使用以下形式：
 
 ```python
-# 旧：from wei_data_shu.chartsManager import TrendPredictor, MultipleTrendPredictor, TextAnalysis
-
-# 新：
-from wei_data_shu.text.forecast import TrendPredictor, MultipleTrendPredictor
-from wei_data_shu.text.analysis import TextAnalysis
+from wei_data_shu.database import MySQLDatabase
+from wei_data_shu.excel import ExcelManager
+from wei_data_shu.files import FileManagement
+from wei_data_shu.mail import DailyEmailReport
+from wei_data_shu.text import DateFormat, StringBaba, textCombing
+from wei_data_shu.ai import ChatBot
+from wei_data_shu.utils import fn_timer, mav_colors
 ```
 
 #### 🔌安装与升级
@@ -46,7 +63,7 @@ pip install wei-data-shu
 安装可选能力（按需安装）：
 
 ```bash
-# 文本分析/趋势预测（chartsManager、TextAnalysis 等）
+# 文本分析/趋势预测（TextAnalysis、TrendPredictor 等）
 pip install "wei-data-shu[analysis]"
 
 # Excel 客户端能力（OpenExcel 的 Excel App 场景）
@@ -61,21 +78,10 @@ pip install wei-data-shu --upgrade
 
 #### 🔧功能
 
-<!-- #### 1. Database 类 （可以连接各种数据库） 弃用
-用于连接和操作数据库。
-```python
-from wei_data_shu import Database
-
-# 示例代码
-db = Database(host='your_host', port=3306, user='your_user', password='your_password', db='your_database')
-result = db("SELECT * FROM your_table", operation_mode="s")
-print(result)
-``` -->
-
 #### 1. MySQLDatabase 类
 主要用于Mysql数据库的快速连接
 ```python
-from wei_data_shu import MySQLDatabase
+from wei_data_shu.database import MySQLDatabase
 ```
 ##### 📌MySQL 连接配置
 ```python
@@ -122,7 +128,7 @@ db.close()
 ```
 ##### SQLAI智能聊天机器人
 ```python
-from wei_data_shu import SQLManager
+from wei_data_shu.database import MySQLDatabase
 
 # 示例代码
 cfg = {
@@ -132,7 +138,7 @@ cfg = {
     'port': 3306,
     'database': 'mlcorpus'
 }
-db = SQLManager.MySQLDatabase(cfg)
+db = MySQLDatabase(cfg)
 db.run_ai_chatbot(chat_history_size=5, system_msg="System: You are a helpful AI assistant.")
 ```
 
@@ -141,7 +147,7 @@ db.run_ai_chatbot(chat_history_size=5, system_msg="System: You are a helpful AI 
 
 ```python
 from pathlib import Path
-from wei_data_shu import ExcelManager, ExcelHandler, OpenExcel, ExcelOperation, quick_excel
+from wei_data_shu.excel import ExcelManager, ExcelHandler, OpenExcel, ExcelOperation, quick_excel
 ```
 
 #### 2.1 ExcelManager 类（推荐使用）
@@ -155,7 +161,7 @@ from wei_data_shu import ExcelManager, ExcelHandler, OpenExcel, ExcelOperation, 
 - DataFrame 支持
 
 ```python
-from wei_data_shu import ExcelManager
+from wei_data_shu.excel import ExcelManager
 
 # 创建或打开文件
 wb = ExcelManager("data.xlsx")
@@ -181,7 +187,7 @@ wb.close()
 **DataFrame 支持：**
 ```python
 import pandas as pd
-from wei_data_shu import ExcelManager
+from wei_data_shu.excel import ExcelManager
 
 df = pd.DataFrame({"Name": ["Alice", "Bob"], "Age": [25, 30]})
 
@@ -196,7 +202,7 @@ with ExcelManager("data.xlsx") as wb:
 
 **工作表管理：**
 ```python
-from wei_data_shu import ExcelManager
+from wei_data_shu.excel import ExcelManager
 
 wb = ExcelManager("data.xlsx")
 
@@ -218,7 +224,7 @@ wb.delete_sheet("OldSheet")
 一行代码完成常用操作：
 
 ```python
-from wei_data_shu import quick_excel, read_excel_quick
+from wei_data_shu.excel import quick_excel, read_excel_quick
 
 # 快速创建并写入数据
 wb = quick_excel("data.xlsx", [["Name", "Age"], ["Alice", 25]])
@@ -230,11 +236,11 @@ data = read_excel_quick("data.xlsx")
 df = read_excel_quick("data.xlsx", as_dataframe=True)
 ```
 
-#### 2.3 ExcelHandler 类（兼容版）
-面向已有文件的读取/写入工具，为兼容性保留。
+#### 2.3 ExcelHandler 类
+面向已有文件的读取/写入工具。
 
 ```python
-from wei_data_shu import ExcelHandler
+from wei_data_shu.excel import ExcelHandler
 
 eh = ExcelHandler("data.xlsx")
 
@@ -256,7 +262,7 @@ eh.excel_quit()
 **注意：需要安装 Microsoft Excel**
 
 ```python
-from wei_data_shu import OpenExcel
+from wei_data_shu.excel import OpenExcel
 
 # 使用上下文管理器自动保存
 with OpenExcel("data.xlsx").my_open() as wb:
@@ -275,7 +281,7 @@ print(sheets)
 提供数据拆分、合并等高级操作。
 
 ```python
-from wei_data_shu import ExcelOperation
+from wei_data_shu.excel import ExcelOperation
 
 # 按工作表拆分为多个文件
 op = ExcelOperation("data.xlsx", "output_folder")
@@ -291,7 +297,7 @@ csv_path = op.convert_to_csv()
 #### 2.6 完整流水线示例
 ```python
 from pathlib import Path
-from wei_data_shu import ExcelManager, OpenExcel, ExcelOperation
+from wei_data_shu.excel import ExcelManager, OpenExcel, ExcelOperation
 
 base = Path.cwd()
 f = str(base / "pipeline.xlsx")
@@ -312,22 +318,18 @@ op.split_table()
 csv_file = op.convert_to_csv()
 ```
 
-#### 3. eSend 类
+#### 3. DailyEmailReport 类
 用于发送邮件。
 
 ```python
-from wei_data_shu import eSend
-
-# 示例代码
-email_sender = eSend(sender,receiver,username,password,smtpserver='smtp.126.com')
-email_sender.send_email(subject='Your Subject', e_content='Your Email Content', file_paths=['/path/to/file/'], file_names=['attachment.txt'])
+from wei_data_shu.mail import DailyEmailReport
 ```
 
 #### 4. DateFormat 类
 用于获取最近的时间处理。
 
 ```python
-from wei_data_shu import DateFormat
+from wei_data_shu.text import DateFormat
 
 # 示例代码
 #timeclass:1日期 date 2时间戳 timestamp 3时刻 time 4datetime
@@ -342,6 +344,8 @@ df = DateFormat(interval_day=0,timeclass='date').datetime_standar(df, '日期')
 #### 5. FileManagement 类
 用于文件移动并且重命名。
 ```python
+from wei_data_shu.files import FileManagement
+
 #latest_folder2 当前目录
 #destination_directory 目标目录
 #target_files2 文件名
@@ -355,19 +359,21 @@ latest_folder = FileManagement().find_latest_folder(base_directory)
 #### 6. StringBaba 类
 用于清洗字符串。
 ```python
-from wei_data_shu import StringBaba
+from wei_data_shu.text import StringBaba
 
 str="""
 萝卜
 白菜
 """
-formatted_str =StringBaba(str1).format_string_sql()
+formatted_str = StringBaba(str).format_string_sql()
 ```
 
 #### 7. TextAnalysis 类
 用于进行词频分析。
 ```python
-from wei_data_shu import TextAnalysis
+from wei_data_shu.text import TextAnalysis
+import pandas as pd
+
 # 示例用法
 data = {
     'Category': ['A', 'A', 'B', 'D', 'C'],
@@ -394,7 +400,7 @@ ta.plot_wordclouds(word_freqs, titles)
 0.0.29新增，用于连接Ollama的AI接口
 
 ```python
-from wei_data_shu import ChatBot
+from wei_data_shu.ai import ChatBot
 
 bot = ChatBot(api_url='http://localhost:11434/api/chat')
 
@@ -417,7 +423,7 @@ print("聊天结束。")
 用于发送每日报告邮件，支持HTML和纯文本格式。
 
 ```python
-from wei_data_shu import DailyEmailReport
+from wei_data_shu.mail import DailyEmailReport
 
 # 初始化 DailyEmailReport 实例
 email_reporter = DailyEmailReport(
@@ -463,6 +469,21 @@ email_reporter.send_daily_report("HTML Report", html_content, is_html=True)
 
 # 发送HTML邮件 - 方式2
 email_reporter.send_daily_report("HTML Report", html_content=html_content)
+```
+
+## 10 Utils 工具
+提供通用计时器和调色板等轻量工具。
+
+```python
+from wei_data_shu.utils import fn_timer, mav_colors
+
+@fn_timer
+def build_report():
+    return "done"
+
+result, elapsed = build_report()
+print(result, elapsed)
+print(mav_colors[:3])
 ```
 
 ## Contributing / 参与贡献
