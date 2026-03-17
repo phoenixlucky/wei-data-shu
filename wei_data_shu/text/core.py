@@ -12,7 +12,7 @@ class StringBaba:
 
     def format_string_sql(self):
         lines = [line.strip() for line in self.input_string.strip().split("\n")]
-        return f"\"{'\",\"'.join(lines)}\""
+        return '"' + '","'.join(lines) + '"'
 
     def filter_string_list(self, filter_list):
         return [item for item in self.input_string if any(keyword in item for keyword in filter_list)]
