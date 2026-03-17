@@ -36,9 +36,11 @@ def _dump_messages(path: Path, messages: list[dict[str, str]]) -> None:
 
     lines = ["messages = []", ""]
     for message in messages:
+        role = json.dumps(message["role"], ensure_ascii=False)
+        content = json.dumps(message["content"], ensure_ascii=False)
         lines.append("[[messages]]")
-        lines.append(f"role = {json.dumps(message['role'], ensure_ascii=False)}")
-        lines.append(f"content = {json.dumps(message['content'], ensure_ascii=False)}")
+        lines.append(f"role = {role}")
+        lines.append(f"content = {content}")
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 

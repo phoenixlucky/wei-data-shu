@@ -7,7 +7,7 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 - minor releases may include breaking changes before `1.0.0`
 - patch releases are reserved for backwards-compatible fixes and documentation-only corrections
 
-## [0.5.1] - 2026-03-17
+## [5.0.2] - 2026-03-17
 
 ### Added
 
@@ -16,7 +16,7 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 ### Changed
 
 - improved README usage documentation structure for faster onboarding
-- bumped package version to `0.5.1`
+- bumped package version to `5.0.2`
 
 ## [0.5.0] - 2026-03-17
 

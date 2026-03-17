@@ -4,7 +4,7 @@ Domain-oriented office automation and data utility toolkit.
 
 `wei-data-shu` 是一个面向办公自动化和数据处理的 Python 工具库，覆盖数据库、Excel、文件处理、文本分析、邮件发送、AI 对话和常用工具函数等场景。
 
-当前文档对应版本：`0.5.1`
+当前文档对应版本：`5.0.2`
 
 当前版本的使用原则：
 - 根包 `wei_data_shu` 只暴露领域包

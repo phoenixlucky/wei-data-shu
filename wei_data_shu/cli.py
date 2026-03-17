@@ -44,7 +44,11 @@ def _run_colors(args: argparse.Namespace) -> int:
         return 1
 
     for record in results:
-        print(f'{record["index"]:>2}. {record["hex"]} | {record["name"]} | {record["name_zh"]}')
+        index = record["index"]
+        color_hex = record["hex"]
+        name = record["name"]
+        name_zh = record["name_zh"]
+        print(f"{index:>2}. {color_hex} | {name} | {name_zh}")
     return 0
 
 
