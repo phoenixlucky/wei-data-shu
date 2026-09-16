@@ -16,7 +16,7 @@ pip install "wei-data-shu[excel]"        # Excel 读写 / 拆分合并（pandas,
 pip install "wei-data-shu[database]"     # MySQL 数据库（mysql-connector-python）
 pip install "wei-data-shu[analysis]"     # 文本/数据分析、趋势预测、图表
 pip install "wei-data-shu[excel-client]" # 本机 Excel 应用操作（xlwings）
-pip install "wei-data-shu[docs]"         # Word/PPT 读写与 md/docx/pptx 互转（python-docx, python-pptx）
+pip install "wei-data-shu[docs]"         # Word/PPT 读写、xlsx 读取与 md/docx/pptx 互转（python-docx, python-pptx, openpyxl）
 ```
 
 ## 目录
@@ -54,10 +54,19 @@ wei-data-shu <命令> --help  # 查看某个子命令的参数
 | `colors` | 查看 / 检索颜色（英文名、中文名、HEX） | 无 |
 | `date` | 日期计算（今天 / 回退 N 天） | 无 |
 | `excel info` | 查看 Excel 工作簿各工作表行数 | `[excel]` extras |
-| `convert` | 文档格式互转（md / docx / pptx） | 目标格式对应的 extras |
+| `convert` | 文档格式互转（源：md / docx / pptx / xlsx，目标：md / docx / pptx） | 目标格式对应的 extras |
 | `md` | 把任意支持的文档打印为 Markdown | 源格式对应的 extras |
+| `files latest` | 找创建时间最新的子文件夹 | 无 |
+| `md2html` | 把文档渲染为 HTML 页面 / 片段 | 源格式对应的 extras |
+| `text clean` | 文本去重、重新编号或转 SQL IN 列表 | 无 |
+| `table` | Markdown 表格 ⇄ CSV / TSV | 无 |
+| `data info` | 数据文件行列数、每列缺失值与前几行 | `[analysis]` extras |
+| `plot` | 折线 / 柱状 / 直方 / 箱线 / 散点 / 饼图 / 相关性热力图 | `[analysis]` extras |
+| `mail send` | 发纯文本或 HTML 邮件，可带附件 | 核心包（需 SMTP 凭据） |
+| `db query` | 连 MySQL 执行一条 SQL 并打印结果 | `[database]` extras |
 
-> 未安装对应 extras 时，`excel` / `convert` 子命令会提示安装命令，不影响其他子命令。
+> 未安装对应 extras 时，`excel` / `convert` / `md2html` / `data` / `plot` / `db` 子命令会提示安装命令，不影响其他子命令。
+> `mail send` 与 `db query` 的密码可用 `--password` 传入，或读环境变量 `WEI_DATA_SHU_MAIL_PASSWORD` / `WEI_DATA_SHU_DB_PASSWORD`（避免写进 shell 历史）。
 
 ### 1.1 password — 密码生成
 
@@ -98,7 +107,7 @@ wei-data-shu colors "#5BC49F"         # 按 HEX 搜索
 输出格式（`序号. HEX | 英文名 | 中文名`）：
 
 ```text
- 2. #5BC49F | mint green | 薄荷绿
+ 3. #5BC49F | mint green | 薄荷绿
  9. #A8E6CF | ice mint | 冰薄荷
 ```
 
@@ -145,6 +154,98 @@ sheet1	4 行
 ```
 
 退出码：成功为 `0`；缺 extras 或文件无法打开为 `1`。
+
+### 1.5 files latest — 找最新文件夹
+
+按创建时间取最新的子文件夹，适合"每天一个日期文件夹"的归档场景。
+
+```bash
+wei-data-shu files latest "D:\downloads"     # 打印最新的子文件夹路径
+```
+
+退出码：成功为 `0`；目录不存在或没有子目录为 `1`。
+
+### 1.6 md2html — 文档转 HTML
+
+把文档渲染成 HTML：默认输出可直接用浏览器打开的完整页面，`--fragment` 只输出 HTML 片段（嵌入其他页面或 Jupyter 用）。
+
+```bash
+wei-data-shu md2html report.md                    # 完整 HTML 输出到 stdout
+wei-data-shu md2html report.md -o report.html     # 写入文件
+wei-data-shu md2html report.md --fragment         # 只要片段
+```
+
+源格式支持 `md` / `docx` / `pptx` / `xlsx` / `xlsm`，按扩展名自动选后端。
+
+### 1.7 text clean — 文本去重与重排
+
+默认去掉重复行并重新编号，常用于把从文档里粘出来的条目整理成干净的列表。
+
+```bash
+wei-data-shu text clean notes.txt                 # 重新编号 + 去重
+wei-data-shu text clean notes.txt --mode original # 保留原编号，仅整行完全相同才去重
+wei-data-shu text clean notes.txt --mode sql      # 转成 "a","b","c" 形式的 SQL IN 列表
+```
+
+三种模式的区别：`renumber` 先剥离行首编号再比较，所以「`1、苹果`」和「`3、苹果`」会被判为重复并合并，然后统一重新编号；
+`original` 不剥离编号，只有整行文本一字不差时才去重（上面那两行会同时保留）。
+
+`-o` 可把结果写入文件；默认编码 `utf-8`，用 `--encoding` 改。
+
+### 1.8 table — Markdown 表格 ⇄ CSV
+
+按扩展名自动判断方向：`.md` / `.markdown` 转 CSV，`.csv` / `.tsv` 转 Markdown 表格。
+
+```bash
+wei-data-shu table report.md            # Markdown 表格 -> CSV
+wei-data-shu table data.csv             # CSV -> Markdown 表格
+wei-data-shu table report.md -i 1       # 取文档里的第 2 个表格
+```
+
+### 1.9 data info — 数据文件速览（需要 `[analysis]`）
+
+行列数、每列非空 / 缺失个数、列类型，以及前若干行预览。
+
+```bash
+wei-data-shu data info sales.csv        # 摘要 + 前 5 行
+wei-data-shu data info sales.csv -n 0   # 只看摘要
+```
+
+支持 `.csv` / `.tsv` / `.txt` / `.json` / `.xlsx`。
+
+### 1.10 plot — 绘图（需要 `[analysis]`）
+
+```bash
+wei-data-shu plot sales.csv -k line -x 月份 -y 销量 -o line.png
+wei-data-shu plot sales.csv -k bar -x 地区 -o bar.png
+wei-data-shu plot sales.csv -k heatmap -o corr.png
+```
+
+`-x` 是横轴 / 分组 / 分类列，`-y` 是数值列（逗号分隔可传多列），`-o` 为必填的输出图片路径。
+`-k` 可选 `line` / `bar` / `hist` / `box` / `scatter` / `pie` / `heatmap`；`scatter` 需要 `--x` 与 `--y`，`pie` 需要 `--x`。
+
+### 1.11 mail send — 发送邮件
+
+```bash
+wei-data-shu mail send --host smtp.qq.com --user me@qq.com \
+  --to boss@corp.com --subject "日报" --body "见附件" -a report.xlsx
+
+wei-data-shu mail send --host smtp.qq.com --user me@qq.com \
+  --to boss@corp.com --subject "日报" --body-file report.html --html
+```
+
+密码建议放环境变量 `WEI_DATA_SHU_MAIL_PASSWORD`；`--dry-run` 只组装并校验（含附件存在性）而不发送。
+返回码：发送成功为 `0`；缺密码、缺正文、附件不存在或发送失败为 `1`。
+
+### 1.12 db query — 执行 MySQL 查询
+
+```bash
+wei-data-shu db query --user root --database shop --sql "SELECT * FROM users LIMIT 5"
+wei-data-shu db query --user root --database shop --sql "SELECT 1" -f json
+```
+
+密码建议放环境变量 `WEI_DATA_SHU_DB_PASSWORD`；`-f` 可选 `table`（默认，等宽对齐）/ `csv` / `json`。
+查询结果为空时输出 `(0 行)`，查询失败输出错误并以 `1` 退出。
 
 ---
 
@@ -217,14 +318,14 @@ except MySQLDatabaseError as exc:
 
 ## 3. Excel（电子表格）
 
-Excel 模块提供 4 个层次的能力：
+Excel 模块提供 5 个层次的能力：
 
 | 类 | 依赖 | 适用场景 |
 | --- | --- | --- |
-| `ExcelManager` | openpyxl | 日常读写、样式、DataFrame、工作表管理 |
-| `quick_excel` / `read_excel_quick` | openpyxl | 极简单次写入 / 读取 |
+| `ExcelManager` | pandas + openpyxl | 日常读写、样式、DataFrame、工作表管理 |
+| `quick_excel` / `read_excel_quick` | pandas + openpyxl | 极简单次写入 / 读取 |
 | `ExcelHandler` | openpyxl | 旧版兼容接口 |
-| `ExcelOperation` | openpyxl + pandas | 拆分多工作表、合并多个文件、转 CSV |
+| `ExcelOperation` | pandas + openpyxl | 拆分多工作表、合并多个文件、转 CSV |
 | `OpenExcel` | xlwings + Microsoft Excel | 调用本机 Excel 应用（刷新公式、宏等） |
 
 推荐优先使用 **`ExcelManager`**。
@@ -236,14 +337,14 @@ from wei_data_shu.excel import ExcelManager
 
 # 方式一：with 语句（自动保存、关闭）
 with ExcelManager("data.xlsx") as wb:
-    wb.write_sheet("Sheet1", [["Name", "Age"], ["Alice", 25]], start_row=1, start_col=1)
-    wb.fast_write("Sheet1", [["Bob", 30]], start_row=3, start_col=1)
-    data = wb.read_sheet("Sheet1", 1, 1)
+    wb.write_sheet("sheet1", [["Name", "Age"], ["Alice", 25]], start_row=1, start_col=1)
+    wb.fast_write("sheet1", [["Bob", 30]], start_row=3, start_col=1)
+    data = wb.read_sheet("sheet1", 1, 1)
     print(data)   # [['Name', 'Age'], ['Alice', 25], ['Bob', 30]]
 
 # 方式二：手动管理
 wb = ExcelManager("data.xlsx")
-wb.fast_write("Sheet1", [[1, 2], [3, 4]], 1, 1)
+wb.fast_write("sheet1", [[1, 2], [3, 4]], 1, 1)
 wb.save()
 wb.close()
 ```
@@ -257,10 +358,10 @@ from wei_data_shu.excel import ExcelManager
 df = pd.DataFrame({"Name": ["Alice", "Bob", "Charlie"], "Age": [25, 30, 28]})
 
 with ExcelManager("team.xlsx") as wb:
-    wb.write_dataframe("Sheet1", df)
+    wb.write_dataframe("sheet1", df)
 
 with ExcelManager("team.xlsx") as wb:
-    df_read = wb.read_dataframe("Sheet1")
+    df_read = wb.read_dataframe("sheet1")
     print(df_read)
 ```
 
@@ -273,13 +374,14 @@ wb = ExcelManager("workbook.xlsx")
 
 # 创建新工作表
 wb.create_sheet("销售数据")
+wb.create_sheet("旧数据")
 
 # 获取工作表信息
-info = wb.get_sheet_info("Sheet1")
+info = wb.get_sheet_info("sheet1")
 print(f"行数: {info['max_row']}, 列数: {info['max_column']}")
 
 # 复制工作表
-wb.copy_sheet("Sheet1", "Sheet1_备份")
+wb.copy_sheet("sheet1", "sheet1_备份")
 
 # 删除工作表
 wb.delete_sheet("旧数据")
@@ -336,7 +438,7 @@ from wei_data_shu.excel import OpenExcel
 
 # 方式一：读写后自动保存
 with OpenExcel("data.xlsx").my_open() as wb:
-    wb.fast_write("Sheet1", [["Name", "Age"], ["Alice", 25]], 1, 1)
+    wb.fast_write("sheet1", [["Name", "Age"], ["Alice", 25]], 1, 1)
 
 # 方式二：刷新公式（如数据透视表）
 with OpenExcel("report.xlsx").open_save_Excel() as appwb:
@@ -373,7 +475,7 @@ filepath = str(base / "pipeline.xlsx")
 
 # 1. 写入数据
 with ExcelManager(filepath) as wb:
-    wb.fast_write("Sheet1", [["Name", "Age"], ["Alice", 25], ["Bob", 30]], 1, 1)
+    wb.fast_write("sheet1", [["Name", "Age"], ["Alice", 25], ["Bob", 30]], 1, 1)
 
 # 2. 通过 Excel 应用刷新公式
 with OpenExcel(filepath).open_save_Excel() as appwb:
@@ -749,7 +851,7 @@ print(pwd16)
 
 ### 颜色检索
 
-内置 50+ 种常用颜色，支持英文名、中文名、HEX 码检索：
+内置 39 种常用颜色，支持英文名、中文名、HEX 码检索：
 
 ```python
 from wei_data_shu.utils import search_colors, mav_colors
@@ -757,7 +859,7 @@ from wei_data_shu.utils import search_colors, mav_colors
 # 按英文名搜索
 results = search_colors("mint")
 print(results[0])
-# {'index': 2, 'hex': '#5BC49F', 'name': 'mint green', 'name_zh': '薄荷绿'}
+# {'index': 3, 'hex': '#5BC49F', 'name': 'mint green', 'name_zh': '薄荷绿'}
 
 # 按中文名搜索
 results = search_colors("薄荷")
@@ -775,7 +877,7 @@ print(mav_colors[:3])    # ['#60ACFC', '#32D3EB', '#5BC49F']
 CLI 输出格式：
 
 ```text
- 2. #5BC49F | mint green | 薄荷绿
+ 3. #5BC49F | mint green | 薄荷绿
 ```
 
 ---
@@ -1005,6 +1107,8 @@ wei-data-shu convert report.md -o report.docx    # 互转（--no-overwrite 时�
 wei-data-shu convert sales.xlsx -o sales.md      # Excel 工作簿 -> Markdown
 wei-data-shu md report.docx                      # 打印为 Markdown
 wei-data-shu md sales.xlsx -o sales.md           # 写入文件（xlsx 同样可作来源）
+wei-data-shu md2html report.md -o report.html     # 渲染成 HTML 页面（--fragment 只要片段）
+wei-data-shu table report.md                     # Markdown 表格 -> CSV（.csv/.tsv 反向转回）
 ```
 
 ### 13.6 Word / PowerPoint 读写

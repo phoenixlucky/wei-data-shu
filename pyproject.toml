@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wei-data-shu"
-version = "0.8.0"
+version = "0.9.0"
 description = "wei-data-shu: 面向办公自动化和数据处理的 Python 工具库 | Domain-oriented office automation & data utility toolkit for Python"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,7 +12,7 @@ license = "GPL-3.0-only"
 authors = [
   {name = "Ethan Wilkins", email = "thisluckyboy@126.com"}
 ]
-keywords = ["office", "excel", "mysql", "email", "automation", "utilities"]
+keywords = ["office", "excel", "word", "powerpoint", "markdown", "mysql", "email", "automation", "utilities"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",

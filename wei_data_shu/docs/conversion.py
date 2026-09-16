@@ -1,4 +1,4 @@
-"""跨格式文档互转（源：``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx``）。
+"""跨格式文档互转（源：``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx`` / ``.xlsm``）。
 
 任意两个方向都经由中间的 :class:`~wei_data_shu.docs.model.Document` 表示，
 因此新增后端后互转自动可用。``.xlsx`` / ``.xlsm`` 只作为读取来源（整本工作簿
@@ -32,7 +32,7 @@ def convert(source: PathLike, target: PathLike, overwrite: bool = True) -> Path:
     """把 ``source`` 文档转换为 ``target`` 格式，返回写入路径。
 
     Args:
-        source: 源文档路径，按扩展名自动选择读取后端（``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx``）。
+        source: 源文档路径，按扩展名自动选择读取后端（``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx`` / ``.xlsm``）。
         target: 目标文档路径，按扩展名自动选择写入后端（``.md`` / ``.docx`` / ``.pptx``）。
         overwrite: 目标已存在时是否覆盖，``False`` 则抛 ``FileExistsError``。
     """

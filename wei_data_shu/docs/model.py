@@ -154,7 +154,7 @@ def save_document(document: "Document", path: PathLike) -> Path:
 
 
 def load_document(path: PathLike) -> "Document":
-    """按扩展名读取 ``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx`` 为 :class:`Document`。"""
+    """按扩展名读取 ``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx`` / ``.xlsm`` 为 :class:`Document`。"""
     source = Path(path)
     if not source.exists():
         raise FileNotFoundError(f"文件不存在: {source}")
@@ -258,7 +258,7 @@ class Document:
 
     @classmethod
     def open(cls, path: PathLike) -> "Document":
-        """按扩展名读取文档（``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx``）。"""
+        """按扩展名读取文档（``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx`` / ``.xlsm``）。"""
         return load_document(path)
 
 

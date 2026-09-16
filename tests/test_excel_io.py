@@ -39,6 +39,32 @@ class TestExcelIO(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     manager.create_sheet("sheet1")
 
+    def test_sheet_names_are_case_insensitive(self):
+        """工作表名不区分大小写：复用已有表，且不应抛 KeyError。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "book.xlsx"
+            with ExcelManager(path) as manager:
+                manager.write_sheet("Sheet1", [["a"]], 1, 1, 1, 1)
+
+                self.assertEqual(manager.sheet_names, ["sheet1"])
+                self.assertEqual(manager.read_sheet("SHEET1", 1, 1, 1, 1), [["a"]])
+                self.assertEqual(manager.get_sheet_info("Sheet1")["name"], "sheet1")
+
+    def test_create_sheet_conflicting_case_raises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "book.xlsx"
+            with ExcelManager(path) as manager:
+                with self.assertRaises(ValueError):
+                    manager.create_sheet("Sheet1")
+
+    def test_delete_sheet_is_case_insensitive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "book.xlsx"
+            with ExcelManager(path) as manager:
+                manager.create_sheet("extra")
+                manager.delete_sheet("EXTRA")
+                self.assertEqual(manager.sheet_names, ["sheet1"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -55,22 +55,45 @@ class ExcelManager:
 
         return self._keep_vba
 
+    def _resolve_sheet_name(self, sheet_name: str) -> Optional[str]:
+        """把名字解析为工作簿中真实的工作表名。
+
+        工作表名在 Excel 中不区分大小写（``sheet1`` 与 ``Sheet1`` 指同一张表），
+        因此先精确匹配，再退回大小写不敏感匹配；都不匹配时返回 ``None``。
+        """
+        if sheet_name in self.workbook.sheetnames:
+            return sheet_name
+        folded = sheet_name.casefold()
+        for existing in self.workbook.sheetnames:
+            if existing.casefold() == folded:
+                return existing
+        return None
+
     def _ensure_sheet(self, sheet_name: str) -> Worksheet:
-        if sheet_name not in self.workbook.sheetnames:
-            self.workbook.create_sheet(title=sheet_name)
-        return self.workbook[sheet_name]
+        resolved = self._resolve_sheet_name(sheet_name)
+        if resolved is not None:
+            return self.workbook[resolved]
+        # 直接用 create_sheet 的返回值：openpyxl 在名称需要规整时会自行改名
+        # （例如与现有表仅大小写不同），若之后按名字索引就会 KeyError。
+        return self.workbook.create_sheet(title=sheet_name)
 
     def create_sheet(self, sheet_name: str, index: Optional[int] = None) -> Worksheet:
-        if sheet_name in self.workbook.sheetnames:
-            raise ValueError(f"工作表 '{sheet_name}' 已存在")
+        existing = self._resolve_sheet_name(sheet_name)
+        if existing is not None:
+            if existing == sheet_name:
+                raise ValueError(f"工作表 '{sheet_name}' 已存在")
+            raise ValueError(
+                f"工作表 '{existing}' 已存在（工作表名不区分大小写，'{sheet_name}' 与它冲突）"
+            )
         return self.workbook.create_sheet(title=sheet_name, index=index)
 
     def delete_sheet(self, sheet_name: str) -> None:
-        if sheet_name not in self.workbook.sheetnames:
+        resolved = self._resolve_sheet_name(sheet_name)
+        if resolved is None:
             raise ValueError(f"工作表 '{sheet_name}' 不存在")
         if len(self.workbook.sheetnames) == 1:
             raise ValueError("不能删除唯一的工作表")
-        self.workbook.remove(self.workbook[sheet_name])
+        self.workbook.remove(self.workbook[resolved])
 
     def write_sheet(
         self,
@@ -108,9 +131,10 @@ class ExcelManager:
         end_row: Optional[int] = None,
         end_col: Optional[int] = None,
     ) -> List[List[Any]]:
-        if sheet_name not in self.workbook.sheetnames:
+        resolved = self._resolve_sheet_name(sheet_name)
+        if resolved is None:
             raise ValueError(f"工作表 '{sheet_name}' 不存在")
-        worksheet = self.workbook[sheet_name]
+        worksheet = self.workbook[resolved]
         if end_row is None:
             end_row = worksheet.max_row
         if end_col is None:
@@ -180,24 +204,25 @@ class ExcelManager:
         return pd.DataFrame(rows, columns=headers)  # type: ignore
 
     def get_sheet_info(self, sheet_name: str) -> Dict[str, Any]:
-        if sheet_name not in self.workbook.sheetnames:
+        resolved = self._resolve_sheet_name(sheet_name)
+        if resolved is None:
             raise ValueError(f"工作表 '{sheet_name}' 不存在")
-        worksheet = self.workbook[sheet_name]
+        worksheet = self.workbook[resolved]
         return {
-            "name": sheet_name,
+            "name": resolved,
             "max_row": worksheet.max_row,
             "max_column": worksheet.max_column,
             "dimensions": worksheet.dimensions,
-            "index": self.workbook.sheetnames.index(sheet_name),
+            "index": self.workbook.sheetnames.index(resolved),
         }
 
     def copy_sheet(self, source_name: str, target_name: str) -> Worksheet:
-        if source_name not in self.workbook.sheetnames:
+        source_resolved = self._resolve_sheet_name(source_name)
+        if source_resolved is None:
             raise ValueError(f"源工作表 '{source_name}' 不存在")
-        if target_name in self.workbook.sheetnames:
+        if self._resolve_sheet_name(target_name) is not None:
             raise ValueError(f"目标工作表 '{target_name}' 已存在")
-        source = self.workbook[source_name]
-        copied = self.workbook.copy_worksheet(source)
+        copied = self.workbook.copy_worksheet(self.workbook[source_resolved])
         copied.title = target_name
         return copied
 

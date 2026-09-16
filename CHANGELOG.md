@@ -9,6 +9,33 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-16
+
+### Added
+
+- CLI 扩展为覆盖全部领域的命令行工具，新增 8 组子命令：
+  - `files latest <目录>`：列出创建时间最新的子文件夹
+  - `md2html <文件>`：把任意支持的文档渲染为 HTML 页面（`--fragment` 只输出片段，`--title` 附带文档标题）
+  - `text clean <文件>`：文本去重与重新编号，`--mode` 可选 `renumber`（默认，同内容不同编号也算重复）、`original`（保留原编号，仅整行相同才去重）、`sql`（转 SQL IN 列表）
+  - `table <文件>`：Markdown 表格与 CSV/TSV 互转，`-i` 选择第几个表格，`--delimiter` 指定分隔符
+  - `data info <文件>`：打印行列数、逐列非空/缺失/类型与前若干行预览
+  - `plot <文件> -o <图片>`：把数据文件画成 `line` / `bar` / `hist` / `box` / `scatter` / `pie` / `heatmap` 图
+  - `mail send`：通过 SMTP/SSL 发送纯文本或 HTML 邮件，支持多个收件人与附件，`--dry-run` 仅组装不发送
+  - `db query --sql`：执行 MySQL 查询，结果可按 `table` / `csv` / `json` 输出
+- `md` 与 `convert` 子命令的文档来源扩展到 `.xlsx` / `.xlsm`
+- CLI 中的数据库与邮箱密码支持环境变量 `WEI_DATA_SHU_DB_PASSWORD` / `WEI_DATA_SHU_MAIL_PASSWORD`，避免密码写入命令行历史
+- 新增 `tests/test_cli_commands.py`，覆盖上述新增子命令
+
+### Changed
+
+- Excel 工作表名匹配改为不区分大小写（与 Excel 本身行为一致）：`read_sheet` / `write_sheet` / `get_sheet_info` / `delete_sheet` / `copy_sheet` 可用任意大小写引用同一张表，`get_sheet_info` 返回的 `name` 与 `index` 为工作簿中的真实表名
+- README 重写：新增「这库是给谁用的」与常见场景速查，安装章节改为「想做的事 → 安装命令」对照表，第一个例子改为零 extras 即可运行
+- 使用手册同步补充新增 CLI 子命令的用法
+
+### Fixed
+
+- `ExcelManager` 在工作表名仅大小写不同时的错误行为：原先 `_ensure_sheet` 会误建同名表（openpyxl 自动改名后按原名索引）并抛 `KeyError`，`delete_sheet` 也无法命中大小写不同的表名
+
 ## [0.8.0] - 2026-09-16
 
 ### Added

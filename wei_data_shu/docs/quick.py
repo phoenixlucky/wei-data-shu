@@ -95,7 +95,7 @@ def to_ppt(data: Any, path: PathLike, title: str | None = None) -> Path:
 
 
 def read_doc(path: PathLike) -> Document:
-    """读取 ``.md`` / ``.docx`` / ``.pptx`` 为 :class:`Document`。"""
+    """读取 ``.md`` / ``.docx`` / ``.pptx`` / ``.xlsx`` / ``.xlsm`` 为 :class:`Document`。"""
     return load_document(path)
 
 
