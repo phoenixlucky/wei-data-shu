@@ -880,6 +880,22 @@ CLI 输出格式：
  3. #5BC49F | mint green | 薄荷绿
 ```
 
+### BOM 安全的文本读取
+
+Windows 上的记事本、Excel 导出的文件常在开头写入 UTF-8 BOM（`\ufeff`）。用 `read_text()` 读取会自动剥离，避免首行标题、CSV 列名里混入不可见字符：
+
+```python
+from wei_data_shu.utils import bom_tolerant_encoding, read_text
+
+text = read_text("report.md")   # 自动剥离 BOM；无 BOM 时与 open(..., encoding="utf-8") 等价
+
+# 自己用标准库打开文件时，可用它把编码名归一
+with open("data.csv", encoding=bom_tolerant_encoding("utf-8")) as handle:
+    rows = list(handle)
+```
+
+> 非 UTF-8 编码（例如 `gbk`）会原样使用，不受影响。
+
 ---
 
 ## 12. analysis 数据分析

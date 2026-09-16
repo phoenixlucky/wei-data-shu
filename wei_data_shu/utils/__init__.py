@@ -9,6 +9,8 @@ __all__ = [
     "search_colors",
     "generate_password",
     "in_notebook",
+    "read_text",
+    "bom_tolerant_encoding",
 ]
 
 _EXPORTS = {
@@ -18,6 +20,8 @@ _EXPORTS = {
     "search_colors": ("wei_data_shu.utils.colors", "search_colors"),
     "generate_password": ("wei_data_shu.utils.passwords", "generate_password"),
     "in_notebook": ("wei_data_shu.utils.notebook", "in_notebook"),
+    "read_text": ("wei_data_shu.utils.textio", "read_text"),
+    "bom_tolerant_encoding": ("wei_data_shu.utils.textio", "bom_tolerant_encoding"),
 }
 
 
