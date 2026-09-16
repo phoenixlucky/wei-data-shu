@@ -15,7 +15,7 @@ wei_data_shu/
 ├─ _api.py                  # root export registry
 ├─ ai/                      # Ollama chat integration
 ├─ database/                # database integrations
-├─ docs/                    # document workflow facade
+├─ docs/                    # document formats (Markdown / Word / PowerPoint) + workflow facade
 ├─ excel/                   # workbook manager, handler, client, operations, quick helpers
 ├─ files/                   # file operations
 ├─ mail/                    # email reporting

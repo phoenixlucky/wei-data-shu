@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 from typing import Sequence
 
 from wei_data_shu.utils import generate_password, search_colors
@@ -34,6 +35,15 @@ def _build_parser() -> argparse.ArgumentParser:
     excel_sub = excel_parser.add_subparsers(dest="excel_command", required=True)
     info_parser = excel_sub.add_parser("info", help="List sheets and row counts of a workbook")
     info_parser.add_argument("file", help="Path to the .xlsx file")
+
+    convert_parser = subparsers.add_parser("convert", help="Convert a document between md / docx / pptx")
+    convert_parser.add_argument("source", help="Source document (.md / .markdown / .docx / .pptx)")
+    convert_parser.add_argument("-o", "--output", required=True, help="Target document path")
+    convert_parser.add_argument("--no-overwrite", action="store_true", help="Fail when the target already exists")
+
+    md_parser = subparsers.add_parser("md", help="Print a document as Markdown")
+    md_parser.add_argument("file", help="Document path (.md / .markdown / .docx / .pptx)")
+    md_parser.add_argument("-o", "--output", help="Write Markdown to a file instead of stdout")
 
     return parser
 
@@ -86,6 +96,35 @@ def _run_excel(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_convert(args: argparse.Namespace) -> int:
+    try:
+        from wei_data_shu.docs import convert
+
+        target = convert(args.source, args.output, overwrite=not args.no_overwrite)
+    except (ImportError, ValueError, FileNotFoundError, FileExistsError) as exc:
+        print(f"转换失败: {exc}")
+        return 1
+    print(f"已生成: {target}")
+    return 0
+
+
+def _run_md(args: argparse.Namespace) -> int:
+    try:
+        from wei_data_shu.docs import read_doc
+
+        text = read_doc(args.file).to_markdown()
+    except (ImportError, ValueError, FileNotFoundError) as exc:
+        print(f"读取失败: {exc}")
+        return 1
+
+    if args.output:
+        Path(args.output).write_text(text, encoding="utf-8")
+        print(f"已生成: {args.output}")
+    else:
+        print(text, end="")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     _ensure_utf8_stdout()
     parser = _build_parser()
@@ -99,6 +138,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _run_date(args)
     if args.command == "excel":
         return _run_excel(args)
+    if args.command == "convert":
+        return _run_convert(args)
+    if args.command == "md":
+        return _run_md(args)
 
     parser.print_help()
     return 0

@@ -3,7 +3,7 @@
 > 面向办公自动化与数据处理的 Python 一站式工具库。本文档为**分域使用示例**全集，
 > 快速入门请见 [README](../README.md) 的「5 分钟上手」。
 
-覆盖领域：**数据库 · Excel · 文件 · 文本分析 · 数据分析 · 邮件 · AI 对话 · 通用工具**。
+覆盖领域：**数据库 · Excel · 文档 · 文件 · 文本分析 · 数据分析 · 邮件 · AI 对话 · 通用工具**。
 
 ## 安装
 
@@ -16,6 +16,7 @@ pip install "wei-data-shu[excel]"        # Excel 读写 / 拆分合并（pandas,
 pip install "wei-data-shu[database]"     # MySQL 数据库（mysql-connector-python）
 pip install "wei-data-shu[analysis]"     # 文本/数据分析、趋势预测、图表
 pip install "wei-data-shu[excel-client]" # 本机 Excel 应用操作（xlwings）
+pip install "wei-data-shu[docs]"         # Word/PPT 读写与 md/docx/pptx 互转（python-docx, python-pptx）
 ```
 
 ## 目录
@@ -32,6 +33,7 @@ pip install "wei-data-shu[excel-client]" # 本机 Excel 应用操作（xlwings�
 10. [ChatBot（AI 对话）](#10-chatbotai-对话)
 11. [Utils（通用工具）](#11-utils通用工具)
 12. [analysis 数据分析](#12-analysis-数据分析)
+13. [docs 文档读写与互转](#13-docs-文档读写与互转)
 
 ---
 
@@ -52,8 +54,10 @@ wei-data-shu <命令> --help  # 查看某个子命令的参数
 | `colors` | 查看 / 检索颜色（英文名、中文名、HEX） | 无 |
 | `date` | 日期计算（今天 / 回退 N 天） | 无 |
 | `excel info` | 查看 Excel 工作簿各工作表行数 | `[excel]` extras |
+| `convert` | 文档格式互转（md / docx / pptx） | 目标格式对应的 extras |
+| `md` | 把任意支持的文档打印为 Markdown | 源格式对应的 extras |
 
-> 未安装对应 extras 时，`excel` 子命令会提示安装命令，不影响其他子命令。
+> 未安装对应 extras 时，`excel` / `convert` 子命令会提示安装命令，不影响其他子命令。
 
 ### 1.1 password — 密码生成
 
@@ -883,8 +887,161 @@ setup_chinese_font(["SimHei"])                # 返回命中的字体名，未�
 
 ---
 
+## 13. docs 文档读写与互转
+
+Markdown 读写与 HTML 片段预览零第三方依赖；Word / PowerPoint / Excel 来源需要
+`pip install wei-data-shu[docs]`。所有格式共享一套 `Document` 中间模型：
+`md` / `docx` / `pptx` 可读可写，`xlsx` 只作读取来源。
+
+### 13.1 一行式 API
+
+```python
+from wei_data_shu.docs import to_markdown, to_word, to_ppt
+
+rows = [["渠道", "销售额"], ["电商", 12580], ["门店", 9680]]
+
+to_markdown(rows, "report.md", title="月度报告")   # 零依赖，返回写入路径
+to_word(rows, "report.docx", title="月度报告")     # 需要 [docs]
+to_ppt(rows, "report.pptx", title="月度报告")      # 需要 [docs]
+```
+
+`data` 支持 DataFrame、二维列表（表格）、`list[str]`（无序列表）、`dict`（键作二级标题）与普通字符串（段落）：
+
+```python
+from wei_data_shu.docs import to_ppt
+
+to_ppt(
+    {
+        "华东": [["渠道", "销售额"], ["电商", 12580]],
+        "华南": [["渠道", "销售额"], ["门店", 9680]],
+    },
+    "report.pptx",
+    title="分区域销售",
+)
+```
+
+### 13.2 Document — 链式构造
+
+```python
+from wei_data_shu.docs import Document
+
+document = (
+    Document(title="月度报告")
+    .add_heading("月度报告", 1)
+    .add_paragraph("本月销售额同比增长 12%。")
+    .add_heading("分渠道", 2)
+    .add_table([["渠道", "销售额"], ["电商", 12580], ["门店", 9680]])
+    .add_bullets(["电商同比 +12%", "门店同比 +3%"])
+    .add_quote("数据截至本月最后一个自然日。")
+    .add_code('print("hello")', language="python")
+    .add_image("chart.png", caption="销售趋势")
+    .add_page_break()
+)
+
+document.save("report.docx")   # 按扩展名自动选择后端：.md / .docx / .pptx
+document.to_markdown()         # 渲染为 Markdown 文本
+Document.open("report.docx")   # 按扩展名读回
+```
+
+节点类型：`Heading` / `Paragraph` / `BulletList` / `Table` / `CodeBlock` / `Image` / `PageBreak`。
+
+### 13.3 跨格式互转
+
+```python
+from wei_data_shu.docs import convert, read_xlsx
+
+convert("report.md", "report.docx")     # Markdown -> Word
+convert("report.docx", "outline.pptx")  # Word -> PowerPoint
+convert("outline.pptx", "outline.md")   # PowerPoint -> Markdown
+
+# Excel 工作簿作为来源：整本读入（一个工作表一页），需要 openpyxl（[docs] extras）
+convert("sales.xlsx", "sales.docx")
+document = read_xlsx("sales.xlsx")      # 也可直接读成 Document
+```
+
+规则说明：
+
+- 源后缀支持 `.md` / `.markdown` / `.docx` / `.pptx` / `.xlsx` / `.xlsm`
+- 目标后缀支持 `.md` / `.markdown` / `.docx` / `.pptx`，其他后缀抛 `ValueError`
+- `xlsx` 只能作为来源，作为转换目标时抛 `ValueError` 并说明原因
+- `overwrite=False` 且目标已存在时抛 `FileExistsError`
+- PPT 按「一级 / 二级标题」分页，更深的标题保留在页内正文
+
+Excel 读取规则（`read_xlsx`）：
+
+- 每个**非空**工作表渲染为一个二级标题（工作表名）+ 一个表格，空工作表自动跳过
+- 只读公式的缓存值；合并单元格只取左上角的值；全空行跳过、尾部空行裁掉
+- 日期去掉零时刻（`2026-09-16`），带时间则保留（`2026-09-16 08:30:00`）；整数值浮点去掉 `.0`（`12580.0` → `12580`）
+- 也可通过 `read_doc("sales.xlsx")` 或 `Document.open("sales.xlsx")` 读取
+
+### 13.4 Markdown 与表格互转
+
+```python
+from wei_data_shu.docs import (
+    df_to_markdown, markdown_to_df, parse_markdown,
+    read_markdown, render_markdown, write_markdown,
+)
+
+text = df_to_markdown([["渠道", "销售额"], ["电商", 12580]])
+# | 渠道 | 销售额 |
+# | --- | --- |
+# | 电商 | 12580 |
+
+records = markdown_to_df(text, as_records=True)  # [{'渠道': '电商', '销售额': '12580'}]，无需 pandas
+df = markdown_to_df(text)                        # 需要 pandas：pip install wei-data-shu[analysis]
+
+document = read_markdown("report.md")            # Markdown 文件 -> Document
+parse_markdown("# 标题\n\n正文")                 # Markdown 文本 -> Document
+print(render_markdown(document))                 # Document -> Markdown 文本
+write_markdown(document, "copy.md")              # 写出 Markdown 文件
+```
+
+解析覆盖 GFM 常用子集：标题、段落、有序/无序列表、引用、围栏代码块、表格、独立成行的图片、水平分隔线（解析为 `PageBreak`）；行内样式按原文保留。
+
+### 13.5 命令行
+
+```bash
+wei-data-shu convert report.md -o report.docx    # 互转（--no-overwrite 时不覆盖已存在目标）
+wei-data-shu convert sales.xlsx -o sales.md      # Excel 工作簿 -> Markdown
+wei-data-shu md report.docx                      # 打印为 Markdown
+wei-data-shu md sales.xlsx -o sales.md           # 写入文件（xlsx 同样可作来源）
+```
+
+### 13.6 Word / PowerPoint 读写
+
+```python
+from wei_data_shu.docs import read_docx, read_pptx, write_docx, write_pptx
+
+document = read_docx("input.docx")   # 标题 / 段落 / 列表 / 表格按正文顺序还原
+write_docx(document, "output.docx")
+
+deck = read_pptx("input.pptx")       # 每页标题 -> 一级标题，缩进项 -> 列表
+write_pptx(deck, "output.pptx")
+```
+
+### 13.7 在 Jupyter 中使用
+
+```python
+from wei_data_shu.docs import Document, render_html
+from wei_data_shu.utils import in_notebook
+
+in_notebook()   # True：运行在 Jupyter / JupyterLab / Colab 内核中
+
+document = Document().add_heading("月度报告", 1).add_table(rows)
+document                # notebook 中直接渲染 HTML 预览（表格带边框）
+document.to_html()      # 同一渲染器，返回可嵌入网页的 HTML 片段
+document.to_markdown()  # 或者要 Markdown 文本
+```
+
+`_repr_html_` 与 `_repr_markdown_` 同时存在时，Jupyter 优先使用 `_repr_html_`。HTML 渲染会转义所有文本与属性值，文档中的 `<script>` 等内容不会被当作标签执行；需要嵌入自定义页面时可直接调用 `render_html(document)`。
+
+`wei_data_shu.analysis` 的绘图函数返回 `matplotlib.figure.Figure`，在 notebook 中作为单元格最后一个表达式即自动内联显示，无需调用 `plt.show()`；`show=True` 在 Jupyter 中也不会阻塞。
+
+---
+
 ## 常见问题
 
+- **`to_word` / `to_ppt` / `read_docx` / `read_pptx` / `read_xlsx` 报缺少依赖**：执行 `pip install "wei-data-shu[docs]"`
 - **`import wei_data_shu.excel` 报错**：未安装 excel extras，执行 `pip install "wei-data-shu[excel]"`
 - **`import wei_data_shu.database` 报错**：未安装 database extras，执行 `pip install "wei-data-shu[database]"`
 - **`TextAnalysis` / `TrendPredictor` 报缺少依赖**：执行 `pip install "wei-data-shu[analysis]"`

@@ -13,12 +13,12 @@
 
 ---
 
-覆盖 **数据库 · Excel · 文件 · 文本分析 · 数据分析 · 邮件 · AI 对话 · 通用工具** 八大领域，
+覆盖 **数据库 · Excel · 文档 · 文件 · 文本分析 · 数据分析 · 邮件 · AI 对话 · 通用工具** 九大领域，
 领域化分包设计，惰性导入零开销，开箱即用。
 
-Covers **eight domains**: database (MySQL), Excel, files, text analytics, data analysis,
-email, AI chat (Ollama) and general utilities. Domain-oriented packages with lazy imports
-and zero startup overhead — ready to use out of the box.
+Covers **nine domains**: database (MySQL), Excel, documents (Markdown / Word / PowerPoint), files,
+text analytics, data analysis, email, AI chat (Ollama) and general utilities. Domain-oriented
+packages with lazy imports and zero startup overhead — ready to use out of the box.
 
 </div>
 
@@ -26,17 +26,20 @@ and zero startup overhead — ready to use out of the box.
 
 ## ✨ 特性
 
-- **八大领域一站覆盖** — MySQL 数据库、Excel 电子表格、文件管理、文本分析（词频/词云/趋势预测）、数据分析（通用读取/清洗/可视化）、邮件发送、Ollama AI 对话、通用工具
+- **九大领域一站覆盖** — MySQL 数据库、Excel 电子表格、文档（Markdown / Word / PowerPoint 读写与互转，Excel 工作簿可作转换来源）、文件管理、文本分析（词频/词云/趋势预测）、数据分析（通用读取/清洗/可视化）、邮件发送、Ollama AI 对话、通用工具
+- **文档格式自由互转** — `md` / `docx` / `pptx` 任意方向互转，并可直接读取 `xlsx` 工作簿（一个工作表一页），共享一套 `Document` 中间模型；一行式 API 把 DataFrame 直接变成 Word 或 PPT
 - **领域化分包设计** — 每个领域一个包，根包仅暴露入口，结构清晰、职责单一
 - **惰性导入零开销** — 各领域包按需懒加载，`import wei_data_shu` 不拖慢启动
 - **开箱即用** — 统一 `wei_data_shu.<domain>` 导入约定，配合完整示例，5 分钟上手
-- **可选依赖按需安装** — 文本分析、Excel App 等重量能力通过 `extras` 安装，核心包轻量
+- **可选依赖按需安装** — Word/PPT/Excel 源、文本分析、Excel App 等重量能力通过 `extras` 安装，核心包轻量
+- **Jupyter 友好** — 图表返回 `Figure` 直接内联显示，中文字体自动配置，`Document` 在 notebook 中渲染带边框的 HTML 表格预览
 
 ## 📖 目录
 
 - [快速开始](#快速开始)
   - [安装](#安装)
   - [导入方式](#导入方式)
+  - [文档读写与互转](#文档读写与互转)
   - [命令行工具](#命令行工具)
   - [5 分钟上手](#5-分钟上手)
 - [功能概览](#功能概览)
@@ -57,7 +60,7 @@ and zero startup overhead — ready to use out of the box.
 pip install wei-data-shu
 ```
 
-> 核心包仅依赖 `toml` 与 `requests`，开箱即用；重量能力按需安装：
+> 核心包仅依赖 `toml` 与 `requests`，开箱即用（Markdown 读写零额外依赖）；重量能力按需安装：
 
 ```bash
 # Excel 读写 / 拆分合并（依赖: pandas, openpyxl）
@@ -72,6 +75,10 @@ pip install "wei-data-shu[analysis]"
 # 需要通过本机 Excel 应用操作工作簿、启用/禁用宏或运行宏
 # 依赖: xlwings + Microsoft Excel
 pip install "wei-data-shu[excel-client]"
+
+# Word / PowerPoint 读写、Excel(.xlsx) 读取与 md / docx / pptx 互转
+# 依赖: python-docx, python-pptx, openpyxl（Markdown 与 HTML 预览零额外依赖）
+pip install "wei-data-shu[docs]"
 ```
 
 升级到最新版本：
@@ -87,13 +94,47 @@ pip install --upgrade wei-data-shu
 ```python
 from wei_data_shu.database import MySQLDatabase, MySQLDatabaseError
 from wei_data_shu.excel import ExcelManager, OpenExcel, ExcelOperation, quick_excel
+from wei_data_shu.docs import Document, to_markdown, to_word, to_ppt, convert
 from wei_data_shu.files import FileManagement
 from wei_data_shu.mail import DailyEmailReport
 from wei_data_shu.text import DateFormat, StringBaba, TextAnalysis, TrendPredictor
 from wei_data_shu.analysis import DataCleaner, read_csv, plot_line, plot_corr_heatmap
 from wei_data_shu.ai import ChatBot
-from wei_data_shu.utils import fn_timer, generate_password, search_colors
+from wei_data_shu.utils import fn_timer, generate_password, search_colors, in_notebook
 ```
+
+### 文档读写与互转
+
+`docs` 域的格式共享一套 `Document` 中间模型：`md` / `docx` / `pptx` 可读可写，
+`xlsx` 只作为读取来源（每个工作表渲染为一页）。任意两方互转即自动成立：
+
+```python
+from wei_data_shu.docs import Document, convert, to_markdown, to_ppt, to_word
+
+rows = [["渠道", "销售额"], ["电商", 12580], ["门店", 9680]]
+
+# 一行式：二维数据 / DataFrame -> Markdown、Word、PPT
+to_markdown(rows, "report.md", title="月度报告")   # 零依赖
+to_word(rows, "report.docx", title="月度报告")     # 需要 wei-data-shu[docs]
+to_ppt(rows, "report.pptx", title="月度报告")      # 需要 wei-data-shu[docs]
+
+# 链式构造更复杂的文档
+Document(title="月度报告").add_heading("月度报告", 1).add_table(rows).add_bullets(
+    ["电商同比 +12%", "门店同比 +3%"]
+).save("report.md")
+
+# 跨格式互转：md / docx / pptx 任意方向（按扩展名自动分派）
+convert("report.md", "report.docx")
+convert("report.docx", "outline.pptx")
+
+# Excel 工作簿作为来源：整本读入（一个工作表一页）
+convert("sales.xlsx", "sales.md")
+```
+
+> 在 Jupyter 中把 `Document` 作为单元格最后一个表达式，会渲染带边框的 HTML 表格预览
+> （`_repr_html_`）；也可显式调用 `document.to_html()` / `document.to_markdown()`。
+
+> 缺少可选依赖时会抛出带安装命令的 `ImportError`，例如 `pip install wei-data-shu[docs]`。
 
 ### Excel 宏操作
 
@@ -150,6 +191,10 @@ wei-data-shu date --days 1 --format "%Y%m%d"
 
 # Excel 工作簿信息（需要 excel extras）
 wei-data-shu excel info report.xlsx  # 列出各工作表行数
+
+# 文档互转与预览
+wei-data-shu convert report.md -o report.docx   # md -> docx / pptx
+wei-data-shu md report.docx                     # 把任意支持的文档打印为 Markdown
 ```
 
 ### 5 分钟上手
@@ -214,13 +259,13 @@ print("临时密码：", temp_password)
 | --- | --- | --- | --- |
 | 数据库 | `wei_data_shu.database` | `MySQLDatabase`, `MySQLDatabaseError` | MySQL 连接、查询、插入、更新、删除、存储过程 |
 | Excel | `wei_data_shu.excel` | `ExcelManager`, `OpenExcel`, `ExcelOperation`, `quick_excel`, `ExcelHandler` | 读写工作簿、样式、DataFrame、工作表管理、拆分合并、宏启用/禁用与调用 |
+| 文档 | `wei_data_shu.docs` | `Document`, `to_markdown`, `to_word`, `to_ppt`, `convert`, `read_markdown`, `read_docx`, `read_pptx`, `read_xlsx`, `render_html`, `FileManagement`, `ExcelHandler`, `OpenExcel`, `ExcelOperation` | Markdown / HTML 预览（均零依赖）、Word / PowerPoint 读写、`xlsx` 读取、md·docx·pptx 任意互转、Excel + 文件操作编排 |
 | 文件 | `wei_data_shu.files` | `FileManagement` | 查找最新文件夹、复制文件、批量重命名、删除 |
 | 邮件 | `wei_data_shu.mail` | `DailyEmailReport` | SMTP/SSL 发送纯文本/HTML 邮件、附件 |
 | 文本 | `wei_data_shu.text` | `DateFormat`, `StringBaba`, `TextAnalysis`, `TrendPredictor`, `MultipleTrendPredictor`, `textCombing` | 日期格式化、字符串清洗、词频分析、词云、ARIMA 趋势预测、段落重组 |
 | 数据分析 | `wei_data_shu.analysis` | `read_csv`, `read_json`, `read_excel`, `read_any`, `DataCleaner`, `plot_line`, `plot_bar`, `plot_hist`, `plot_box`, `plot_scatter`, `plot_pie`, `plot_corr_heatmap`, `setup_chinese_font` | 通用数据读取、缺失值/重复值/异常值处理、归一化、类别编码、常用图表绘制、相关热力图、中文字体自动配置 |
 | AI | `wei_data_shu.ai` | `ChatBot` | 对接 Ollama API，支持流式/非流式对话、聊天记录持久化 |
-| 工具 | `wei_data_shu.utils` | `fn_timer`, `generate_password`, `search_colors`, `mav_colors` | 函数计时器、安全密码生成、颜色检索 |
-| 文档 | `wei_data_shu.docs` | `FileManagement`, `ExcelHandler`, `OpenExcel`, `ExcelOperation` | 文档工作流（Excel + 文件操作的组合编排） |
+| 工具 | `wei_data_shu.utils` | `fn_timer`, `generate_password`, `search_colors`, `mav_colors`, `in_notebook` | 函数计时器、安全密码生成、颜色检索、Jupyter 环境探测 |
 
 ---
 
@@ -232,7 +277,7 @@ wei_data_shu/
 │  ├─ __init__.py           # 根包入口，按需惰性加载各个领域包
 │  ├─ __main__.py           # python -m 入口
 │  ├─ _api.py               # 统一公开 API 注册表
-│  ├─ cli.py                # 命令行接口（colors / password / date / excel）
+│  ├─ cli.py                # 命令行接口（colors / password / date / excel / convert / md）
 │  ├─ py.typed              # PEP 561 类型标记（IDE 补全）
 │  ├─ ai/                   # AI 能力（ChatBot, Ollama）
 │  ├─ analysis/             # 数据分析
@@ -241,7 +286,17 @@ wei_data_shu/
 │  │  ├─ charts.py          #   可视化（折线/柱状/直方/箱线/散点/饼图/热力图）
 │  │  └─ _deps.py           #   可选依赖守卫
 │  ├─ database/             # 数据库能力（MySQL）
-│  ├─ docs/                 # 文档工作流（Excel + 文件处理的组合）
+│  ├─ docs/                 # 文档能力
+│  │  ├─ model.py           #   中间模型: Document 与各类节点
+│  │  ├─ md.py              #   Markdown 读写（零第三方依赖）
+│  │  ├─ html.py            #   HTML 片段渲染（零第三方依赖，notebook 预览）
+│  │  ├─ word.py            #   Word 读写（python-docx）
+│  │  ├─ slides.py          #   PowerPoint 读写（python-pptx）
+│  │  ├─ sheet.py           #   Excel 工作簿读取（openpyxl，仅作源格式）
+│  │  ├─ conversion.py      #   跨格式互转 convert()
+│  │  ├─ quick.py           #   一行式 API: to_markdown / to_word / to_ppt
+│  │  ├─ workflow.py        #   文档工作流（Excel + 文件处理组合）
+│  │  └─ _deps.py           #   可选依赖守卫
 │  ├─ excel/                # Excel 能力
 │  │  ├─ manager.py         #   核心: ExcelManager
 │  │  ├─ handler.py         #   兼容: ExcelHandler
@@ -260,9 +315,10 @@ wei_data_shu/
 │  └─ utils/                # 通用工具
 │     ├─ timing.py          #   fn_timer
 │     ├─ passwords.py       #   generate_password
-│     └─ colors.py          #   mav_colors, search_colors
+│     ├─ colors.py          #   mav_colors, search_colors
+│     └─ notebook.py        #   in_notebook（Jupyter 环境探测）
 ├─ tests/                   # 单元测试
-├─ examples/                # 可运行示例（quickstart / excel / chatbot）
+├─ examples/                # 可运行示例（quickstart / excel / chatbot / docs_demo）
 ├─ docs/plans/              # 架构设计文档
 ├─ pyproject.toml           # 包配置 & 依赖
 ├─ LICENSE                  # GPL-3.0 许可证
@@ -275,27 +331,31 @@ wei_data_shu/
 | --- | --- |
 | **惰性导入** | 每个领域包使用 `__getattr__` 按需加载，避免启动时全量导入 |
 | **统一入口** | 根包只暴露领域包名称，所有公开 API 通过 `wei_data_shu.<domain>.ClassName` 访问 |
-| **结构清晰** | 按领域分包，职责明确；`docs` 包编排跨领域的复合工作流 |
-| **可选依赖** | Excel / 数据库 / 文本分析 / Excel App 通过 `[excel]` `[database]` `[analysis]` `[excel-client]` extras 按需安装，核心包仅依赖 `toml`/`requests` |
+| **结构清晰** | 按领域分包，职责明确；`docs` 包同时提供文档格式后端与跨领域复合工作流 |
+| **格式中立** | 文档格式差异收敛到 `Document` 中间模型：`md` / `docx` / `pptx` 可读可写，`xlsx` 只作源格式，新增后端即自动获得全部互转能力 |
+| **可选依赖** | Word/PPT/Excel 源 / 数据库 / 文本分析 / Excel App 通过 `[docs]` `[excel]` `[database]` `[analysis]` `[excel-client]` extras 按需安装，核心包仅依赖 `toml`/`requests` |
 
 ---
 
 ## 💻 用法示例
 
-完整的分域示例（数据库 / Excel / 邮件 / 日期 / 字符串 / 文本分析 / 趋势预测 / 文件管理 / AI 对话 / 通用工具 / 数据分析）请参阅 **[📖 使用手册](docs/USAGE.md)**。
+完整的分域示例（数据库 / Excel / 文档读写与互转 / 邮件 / 日期 / 字符串 / 文本分析 / 趋势预测 / 文件管理 / AI 对话 / 通用工具 / 数据分析）请参阅 **[📖 使用手册](docs/USAGE.md)**。
 
 这里仅保留一个不依赖任何第三方服务的最小示例：
 
 ```python
+from wei_data_shu.docs import to_markdown
 from wei_data_shu.text import DateFormat
 from wei_data_shu.utils import generate_password, search_colors
 
 print(DateFormat(interval_day=1).get_timeparameter())  # 昨天日期
 print(generate_password(13))                           # 安全密码
 print(search_colors("薄荷")[0])                        # 颜色检索
+print(to_markdown([["渠道", "销售额"], ["电商", 12580]], title="月报"))
 ```
 
 ---
+
 ## 🗺 Roadmap（计划表）
 
 以下功能已列入规划、尚未实现，欢迎贡献：
@@ -312,7 +372,8 @@ print(search_colors("薄荷")[0])                        # 颜色检索
 | 建模 | 回归与分类 | 线性回归、逻辑回归封装 | 中 |
 | 建模 | 聚类与降维 | KMeans、PCA | 中 |
 | 建模 | 通用模型评估 | 分类/回归指标一键计算与交叉验证 | 低 |
-| 交付 | 分析报告自动生成 | HTML / Word 模板化报告，自动嵌入图表与统计结论 | 中 |
+| 交付 | 分析报告自动生成 | Word / PPT / Markdown 导出已在 0.8.0 落地，待补 HTML 模板化报告与统计结论自动嵌入 | 中 |
+| 交付 | 图表插入文档 | 将 matplotlib 图写入 Word / PPT / Markdown（`Document.add_image` 已支持本地图片） | 中 |
 | 交付 | 图表插入 Excel | 将 matplotlib 图写入 Excel 工作表，打通 analysis 与 excel 领域 | 中 |
 | 工程 | 定时任务调度 | 报表/抓取任务的定时执行配置 | 低 |
 
@@ -320,11 +381,11 @@ print(search_colors("薄荷")[0])                        # 颜色检索
 
 ## 🚢 发布
 
-打 `wei-data-shu-<版本>` 格式的 tag（如 `wei-data-shu-0.7.3`）并推送，CI 会自动构建并发布到 PyPI：
+打 `wei-data-shu-<版本>` 格式的 tag（如 `wei-data-shu-0.8.0`）并推送，CI 会自动构建并发布到 PyPI：
 
 ```bash
-git tag wei-data-shu-0.7.3
-git push origin wei-data-shu-0.7.3
+git tag wei-data-shu-0.8.0
+git push origin wei-data-shu-0.8.0
 ```
 
 > 前提：仓库需配置 `PYPI_TOKEN` secret（见 [release.yml](.github/workflows/release.yml)）。
