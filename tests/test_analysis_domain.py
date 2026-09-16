@@ -5,32 +5,39 @@ import tempfile
 import unittest
 import warnings
 
-import matplotlib
-
-matplotlib.use("Agg")  # headless backend, must be set before pyplot import
-
 warnings.filterwarnings("ignore", message="Glyph .* missing from font")
 warnings.filterwarnings("ignore", message="Could not infer format")
 
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
+try:
+    import matplotlib
 
-from wei_data_shu import analysis  # noqa: E402
-from wei_data_shu.analysis import (  # noqa: E402
-    DataCleaner,
-    plot_bar,
-    plot_box,
-    plot_corr_heatmap,
-    plot_hist,
-    plot_line,
-    plot_pie,
-    plot_scatter,
-    read_any,
-    read_csv,
-    read_excel,
-    read_json,
-    setup_chinese_font,
-)
+    matplotlib.use("Agg")  # headless backend, must be set before pyplot import
+
+    import numpy as np  # noqa: E402
+    import pandas as pd  # noqa: E402
+
+    from wei_data_shu import analysis  # noqa: E402
+    from wei_data_shu.analysis import (  # noqa: E402
+        DataCleaner,
+        plot_bar,
+        plot_box,
+        plot_corr_heatmap,
+        plot_hist,
+        plot_line,
+        plot_pie,
+        plot_scatter,
+        read_any,
+        read_csv,
+        read_excel,
+        read_json,
+        setup_chinese_font,
+    )
+
+    _ANALYSIS_OK = True
+except ImportError:  # pragma: no cover - 依赖缺失时整体跳过，而非报错
+    _ANALYSIS_OK = False
+
+_ANALYSIS_SKIP_REASON = "analysis extras 未安装或不可用（pip install wei-data-shu[analysis]）"
 
 
 def _sample_df():
@@ -43,6 +50,7 @@ def _sample_df():
     )
 
 
+@unittest.skipUnless(_ANALYSIS_OK, _ANALYSIS_SKIP_REASON)
 class TestAnalysisDomainExport(unittest.TestCase):
     def test_root_package_lazy_exports_analysis(self):
         import wei_data_shu
@@ -55,6 +63,7 @@ class TestAnalysisDomainExport(unittest.TestCase):
             self.assertIn(name, analysis.__all__)
 
 
+@unittest.skipUnless(_ANALYSIS_OK, _ANALYSIS_SKIP_REASON)
 class TestReadIO(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.TemporaryDirectory()
@@ -92,6 +101,7 @@ class TestReadIO(unittest.TestCase):
             read_any("unknown.parquet")
 
 
+@unittest.skipUnless(_ANALYSIS_OK, _ANALYSIS_SKIP_REASON)
 class TestDataCleaner(unittest.TestCase):
     def test_fill_missing_const(self):
         df = pd.DataFrame({"a": [1.0, np.nan, 3.0]})
@@ -207,6 +217,7 @@ class TestDataCleaner(unittest.TestCase):
         self.assertIn("城市_北京", cleaned.columns)
 
 
+@unittest.skipUnless(_ANALYSIS_OK, _ANALYSIS_SKIP_REASON)
 class TestCharts(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.TemporaryDirectory()

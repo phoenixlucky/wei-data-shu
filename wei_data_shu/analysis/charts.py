@@ -10,9 +10,13 @@ PingFang SC / Noto Sans CJK 等），中文标签默认即可正常显示；未�
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Iterable
 
+from ..utils.notebook import in_notebook
 from ._deps import np, pd, plt, require_deps
+
+_LOGGER = logging.getLogger(__name__)
 
 _DEFAULT_FIGSIZE = (10, 5)
 
@@ -72,11 +76,27 @@ def setup_chinese_font(preferred: Iterable[str] | None = None) -> str | None:
 _AUTO_CJK_FONT = setup_chinese_font()
 
 
+def _show(fig: Any) -> None:
+    """显示图像；无法交互显示时给出提示而不是静默忽略。
+
+    Jupyter 中 Figure 会被自动内联渲染，此时 ``plt.show()`` 不会阻塞；无 GUI 的
+    Agg 后端无法弹窗，直接跳过并记录一条日志，避免 matplotlib 的告警噪音。
+    """
+    if in_notebook():
+        plt.show()
+        return
+    backend = str(plt.get_backend())
+    if "agg" in backend.lower():
+        _LOGGER.info("matplotlib 后端 %s 无法交互显示图像，请使用 save_path 保存或切换交互后端", backend)
+        return
+    plt.show()
+
+
 def _require_and_finalize(fig: Any, save_path: str | None, show: bool) -> Any:
     if save_path is not None:
         fig.savefig(save_path, bbox_inches="tight")
     if show:
-        plt.show()
+        _show(fig)
     return fig
 
 

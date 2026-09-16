@@ -3,8 +3,13 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from wei_data_shu.excel.client import OpenExcel
-from wei_data_shu.excel.manager import ExcelManager
+try:
+    from wei_data_shu.excel.client import OpenExcel
+    from wei_data_shu.excel.manager import ExcelManager
+
+    _EXCEL_CLIENT_OK = True
+except ImportError:  # pragma: no cover - pandas / xlwings 缺失时整体跳过，而非报错
+    _EXCEL_CLIENT_OK = False
 
 
 class _FakeApi:
@@ -63,6 +68,7 @@ class _FakeXlwings:
         return self.app
 
 
+@unittest.skipUnless(_EXCEL_CLIENT_OK, "excel extras 未安装或不可用（pip install wei-data-shu[excel]）")
 class TestOpenExcelMacros(unittest.TestCase):
     def test_run_macro_enables_macros_and_saves_result(self):
         workbook = _FakeWorkbook()
