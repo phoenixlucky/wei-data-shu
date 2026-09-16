@@ -460,11 +460,11 @@ print(to_markdown([["渠道", "销售额"], ["电商", 12580]], title="月报"))
 
 ## 🚢 发布
 
-打 `wei-data-shu-<版本>` 格式的 tag（例如 `wei-data-shu-0.9.1`）并推送，CI 会自动构建并发布到 PyPI：
+打 `wei-data-shu-<版本>` 格式的 tag（例如 `wei-data-shu-0.9.2`）并推送，CI 会自动构建并发布到 PyPI：
 
 ```bash
-git tag wei-data-shu-0.9.1
-git push origin wei-data-shu-0.9.1
+git tag wei-data-shu-0.9.2
+git push origin wei-data-shu-0.9.2
 ```
 
 > 前提：仓库需配置 `PYPI_TOKEN` secret（见 [release.yml](.github/workflows/release.yml)）。

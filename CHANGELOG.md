@@ -9,6 +9,8 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-09-16
+
 ### Changed
 
 - `wei_data_shu.utils` 公开导出 `read_text` 与 `bom_tolerant_encoding`（0.9.1 新增的 `utils.textio` 原先仅供内部使用），现在可直接 `from wei_data_shu.utils import read_text`；README 功能概览表、项目结构树与使用手册第 11 章同步补充
