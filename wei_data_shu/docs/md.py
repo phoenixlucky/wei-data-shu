@@ -16,6 +16,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ..utils.textio import read_text
+
 from .model import (
     BulletList,
     CodeBlock,
@@ -69,6 +71,8 @@ def _split_table_row(line: str) -> list[str]:
 
 def parse_markdown(text: str) -> Document:
     """把 Markdown 文本解析为 :class:`~wei_data_shu.docs.model.Document`。"""
+    if text.startswith("\ufeff"):  # 调用方可能把带 BOM 的文本直接传进来
+        text = text[1:]
     lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
     document = Document()
     pending: list[str] = []
@@ -220,9 +224,8 @@ def render_markdown(document: Document, include_title: bool = False) -> str:
 
 
 def read_markdown(path: PathLike, encoding: str = "utf-8") -> Document:
-    """读取 ``.md`` / ``.markdown`` 文件为 :class:`Document`。"""
-    source = Path(path)
-    return parse_markdown(source.read_text(encoding=encoding))
+    """读取 ``.md`` / ``.markdown`` 文件为 :class:`Document`（UTF-8 的 BOM 会被剥离）。"""
+    return parse_markdown(read_text(path, encoding))
 
 
 def write_markdown(

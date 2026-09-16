@@ -9,6 +9,18 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-09-16
+
+### Fixed
+
+- 带 UTF-8 BOM 的文本文件读取时 BOM 未被剥离：Markdown 首行标题会降级为普通段落、编号列表首行无法识别，`table` 转换出的 CSV 首个列名也会多出一个不可见字符。新增 `wei_data_shu.utils.textio`（`read_text` / `bom_tolerant_encoding`），`read_markdown()` 与 CLI 的 `md2html` / `text clean` / `table` / `mail send --body-file` 改用 BOM 安全读取；`parse_markdown()` 同时忽略直接传入文本开头的 BOM。以 UTF-8 读取时行为在无 BOM 情况下不变，显式指定的其他编码照旧生效
+- `analysis` 域的可选依赖提示把「已安装但导入失败」误报为「缺少依赖」，会引导用户重装已经装好的包（例如 matplotlib 缺少 `_c_internal_utils` 扩展时）。`require_deps()` 现在区分「未安装」与「已安装但无法导入」两种情况，后者附带真实异常；`data info` 与 `plot` 子命令改为透传该消息
+- `md2html --fragment` 的输出缺少结尾换行，与 `md` / `table` 子命令不一致
+
+### Added
+
+- 新增 `tests/test_cli_edge_cases.py`，覆盖上述三处修复
+
 ## [0.9.0] - 2026-09-16
 
 ### Added

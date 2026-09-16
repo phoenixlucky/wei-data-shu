@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from wei_data_shu.utils import generate_password, search_colors
+from wei_data_shu.utils.textio import bom_tolerant_encoding, read_text
 
-_ANALYSIS_HINT = "缺少 analysis 依赖，请先安装: pip install 'wei-data-shu[analysis]'"
 _DATABASE_HINT = "缺少 database 依赖，请先安装: pip install 'wei-data-shu[database]'"
 _DB_PASSWORD_ENV = "WEI_DATA_SHU_DB_PASSWORD"
 _MAIL_PASSWORD_ENV = "WEI_DATA_SHU_MAIL_PASSWORD"
@@ -26,6 +26,11 @@ def _ensure_utf8_stdout() -> None:
     reconfigure = getattr(sys.stdout, "reconfigure", None)
     if callable(reconfigure):
         reconfigure(encoding="utf-8")
+
+
+def _emit(text: str) -> None:
+    """输出文本并保证以换行结尾，避免与 shell 提示符粘连。"""
+    print(text, end="" if text.endswith("\n") else "\n")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -223,7 +228,7 @@ def _run_md(args: argparse.Namespace) -> int:
         Path(args.output).write_text(text, encoding="utf-8")
         print(f"已生成: {args.output}")
     else:
-        print(text, end="")
+        _emit(text)
     return 0
 
 
@@ -275,7 +280,7 @@ def _run_md2html(args: argparse.Namespace) -> int:
         Path(args.output).write_text(text, encoding="utf-8")
         print(f"已生成: {args.output}")
     else:
-        print(text, end="")
+        _emit(text)
     return 0
 
 
@@ -286,7 +291,7 @@ def _run_text(args: argparse.Namespace) -> int:
     from wei_data_shu.text import StringBaba, textCombing
 
     try:
-        text = Path(args.file).read_text(encoding=args.encoding)
+        text = read_text(args.file, args.encoding)
     except OSError as exc:
         print(f"读取失败: {exc}")
         return 1
@@ -303,7 +308,7 @@ def _run_text(args: argparse.Namespace) -> int:
         Path(args.output).write_text(result + "\n", encoding="utf-8")
         print(f"已生成: {args.output}")
     else:
-        print(result)
+        _emit(result)
     return 0
 
 
@@ -318,7 +323,7 @@ def _run_table(args: argparse.Namespace) -> int:
     suffix = source.suffix.lower()
     if suffix in {".md", ".markdown"}:
         try:
-            text = source.read_text(encoding=args.encoding)
+            text = read_text(source, args.encoding)
         except OSError as exc:
             print(f"读取失败: {exc}")
             return 1
@@ -337,7 +342,7 @@ def _run_table(args: argparse.Namespace) -> int:
     elif suffix in {".csv", ".tsv"}:
         delimiter = args.delimiter or ("\t" if suffix == ".tsv" else ",")
         try:
-            with source.open("r", encoding=args.encoding, newline="") as handle:
+            with source.open("r", encoding=bom_tolerant_encoding(args.encoding), newline="") as handle:
                 rows = [row for row in csv.reader(handle, delimiter=delimiter)]
         except OSError as exc:
             print(f"读取失败: {exc}")
@@ -351,7 +356,7 @@ def _run_table(args: argparse.Namespace) -> int:
         Path(args.output).write_text(result, encoding="utf-8")
         print(f"已生成: {args.output}")
     else:
-        print(result, end="")
+        _emit(result)
     return 0
 
 
@@ -382,8 +387,8 @@ def _run_data(args: argparse.Namespace) -> int:
 
     try:
         frame = _read_frame(args.file)
-    except ImportError:
-        print(_ANALYSIS_HINT)
+    except ImportError as exc:
+        print(f"依赖不可用: {exc}")
         return 1
     except (ValueError, FileNotFoundError, OSError) as exc:
         print(f"读取失败: {exc}")
@@ -424,8 +429,8 @@ def _run_plot(args: argparse.Namespace) -> int:
         )
 
         frame = _read_frame(args.file)
-    except ImportError:
-        print(_ANALYSIS_HINT)
+    except ImportError as exc:
+        print(f"依赖不可用: {exc}")
         return 1
     except (ValueError, FileNotFoundError, OSError) as exc:
         print(f"读取失败: {exc}")
@@ -462,8 +467,8 @@ def _run_plot(args: argparse.Namespace) -> int:
             plot_pie(frame, col=_first_column(args.x), title=args.title, save_path=target)
         else:
             plot_corr_heatmap(frame, cols=columns, title=args.title, save_path=target)
-    except ImportError:
-        print(_ANALYSIS_HINT)
+    except ImportError as exc:
+        print(f"依赖不可用: {exc}")
         return 1
     except (ValueError, KeyError) as exc:
         print(f"绘图失败: {exc}")
@@ -485,7 +490,7 @@ def _run_mail(args: argparse.Namespace) -> int:
     body = args.body
     if args.body_file:
         try:
-            body = Path(args.body_file).read_text(encoding=args.encoding)
+            body = read_text(args.body_file, args.encoding)
         except OSError as exc:
             print(f"读取正文失败: {exc}")
             return 1
