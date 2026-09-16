@@ -9,6 +9,29 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-16
+
+### Added
+
+- 新增 `docs` 文档域能力：`Document` 格式无关中间模型 + Markdown（零依赖）/ Word（`python-docx`）/ PowerPoint（`python-pptx`）三种后端读写，并支持任意两方互转 `convert()`
+- `convert()` 支持 `xlsx` / `.xlsm` 作为第四种**源**格式：整本工作簿按工作表读入（每个工作表一个二级标题 + 表格），空工作表与全空行自动跳过；`xlsx` 不能作为转换目标
+- `Document._repr_html_()` 提供 Jupyter HTML 预览（底层 `render_html()`，表格带边框），所有文本与属性值统一 HTML 转义；Markdown / HTML 渲染均零第三方依赖
+- 一行式 API：`to_markdown` / `to_word` / `to_ppt` / `read_doc` / `build`，可直接接受 DataFrame、二维列表、`list[str]`、`dict` 或 `Document`
+- CLI 新增 `convert`（文档格式互转）与 `md`（把任意支持的文档打印为 Markdown）子命令，`md` 同时支持 `xlsx` 来源
+- `wei_data_shu.utils.in_notebook` 提供 Jupyter 环境探测；`Document` 实现 `_repr_markdown_` 与 `_repr_html_`，notebook 中可直接渲染文档预览
+- 新增 `[docs]` extras（`python-docx`、`python-pptx`、`openpyxl`）；Markdown 与 HTML 预览位于核心包，零额外依赖
+- 新增 `examples/docs_demo.py`，使用手册补充「docs 文档读写与互转」章节
+
+### Changed
+
+- 图表函数在 `show=True` 且后端为无 GUI 的 Agg 时改为记录日志提示，不再静默无效（Jupyter / 交互后端行为不变）
+- 版本号提升至 `0.8.0`
+
+### Fixed
+
+- 测试套件在缺少可选依赖时产生假失败：`tests/test_analysis_domain.py` 与 `tests/test_excel_client.py` 原先在模块顶层直接 `import matplotlib` / `import pandas`，未安装对应 extras 时整个模块报 `ERROR` 而非跳过；现改为 try-import + `unittest.skipUnless`（与既有 `tests/test_excel_io.py` 一致），依赖缺失或不可用时降级为 skip
+- 修复后在「依赖齐全」「依赖缺失」「依赖损坏（安装不完整）」三种环境下 `python -m unittest discover -s tests -p "test_*.py"` 均无 ERROR
+
 ## [0.7.3] - 2026-09-09
 
 ### Fixed
