@@ -355,6 +355,7 @@ wei_data_shu/
 │  ├─ __init__.py           # 根包入口，按需惰性加载各个领域包
 │  ├─ __main__.py           # python -m 入口
 │  ├─ _api.py               # 统一公开 API 注册表
+│  ├─ _deps.py              # 共享可选依赖核心（依赖名映射与安装提示）
 │  ├─ cli.py                # 命令行接口（14 个子命令，见 docs/USAGE.md 第 1 节）
 │  ├─ py.typed              # PEP 561 类型标记（IDE 补全）
 │  ├─ ai/                   # AI 能力（ChatBot, Ollama）
@@ -381,7 +382,8 @@ wei_data_shu/
 │  │  ├─ client.py          #   桌面: OpenExcel (xlwings)
 │  │  ├─ operations.py      #   高级: ExcelOperation (拆分/合并/CSV)
 │  │  ├─ quick.py           #   快捷: quick_excel / read_excel_quick
-│  │  └─ _helpers.py        #   内部: 样式/创建/自动范围
+│  │  ├─ _helpers.py        #   内部: 样式/创建/自动范围
+│  │  └─ _deps.py           #   可选依赖守卫
 │  ├─ files/                # 文件处理（FileManagement）
 │  ├─ mail/                 # 邮件发送（DailyEmailReport）
 │  ├─ text/                 # 文本处理
@@ -460,11 +462,11 @@ print(to_markdown([["渠道", "销售额"], ["电商", 12580]], title="月报"))
 
 ## 🚢 发布
 
-打 `wei-data-shu-<版本>` 格式的 tag（例如 `wei-data-shu-0.9.2`）并推送，CI 会自动构建并发布到 PyPI：
+打 `wei-data-shu-<版本>` 格式的 tag（例如 `wei-data-shu-0.10.0`）并推送，CI 会自动构建并发布到 PyPI：
 
 ```bash
-git tag wei-data-shu-0.9.2
-git push origin wei-data-shu-0.9.2
+git tag wei-data-shu-0.10.0
+git push origin wei-data-shu-0.10.0
 ```
 
 > 前提：仓库需配置 `PYPI_TOKEN` secret（见 [release.yml](.github/workflows/release.yml)）。
