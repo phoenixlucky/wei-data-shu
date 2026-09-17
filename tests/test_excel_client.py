@@ -76,9 +76,7 @@ class TestOpenExcelMacros(unittest.TestCase):
         xlwings = _FakeXlwings(app)
 
         with patch("wei_data_shu.excel.client._require_xlwings", return_value=xlwings):
-            result = OpenExcel("report.xlsm", "result.xlsm").run_macro(
-                "Module1.RefreshReport", args=[2026, "09"]
-            )
+            result = OpenExcel("report.xlsm", "result.xlsm").run_macro("Module1.RefreshReport", args=[2026, "09"])
 
         self.assertEqual(result, "ok")
         self.assertEqual(workbook.api.AutomationSecurity, 1)

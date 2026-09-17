@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, List, Optional, Sequence, Union
-
-from openpyxl.worksheet.worksheet import Worksheet
+from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Union
 
 from ._helpers import _auto_range
 from .manager import ExcelManager
+
+if TYPE_CHECKING:
+    from openpyxl.worksheet.worksheet import Worksheet
 
 
 class ExcelHandler:
@@ -66,9 +67,7 @@ class ExcelHandler:
     ) -> None:
         if xl_book is None:
             raise ValueError("必须提供 xl_book 参数")
-        actual_end_row, actual_end_col = _auto_range(
-            start_row, start_col, results, re, end_row, end_col
-        )
+        actual_end_row, actual_end_col = _auto_range(start_row, start_col, results, re, end_row, end_col)
         xl_book.excel_write(sheet_name, results, start_row, start_col, actual_end_row, actual_end_col)
 
 

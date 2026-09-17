@@ -24,6 +24,11 @@ class TestExcelDomain(unittest.TestCase):
             self.assertIs(excel.quick_excel, sentinel)
         mock_import.assert_called_once_with("wei_data_shu.excel.quick")
 
+    def test_manager_defers_heavy_imports_to_call_time(self):
+        import wei_data_shu.excel.manager as manager
+
+        self.assertFalse(hasattr(manager, "pd"))
+
 
 if __name__ == "__main__":
     unittest.main()

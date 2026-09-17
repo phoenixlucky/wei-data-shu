@@ -100,6 +100,27 @@ class TestReadIO(unittest.TestCase):
         with self.assertRaises(ValueError):
             read_any("unknown.parquet")
 
+    def test_read_any_strips_utf8_bom_from_columns(self):
+        path = os.path.join(self.tmpdir.name, "bom.csv")
+        with open(path, "w", encoding="utf-8-sig") as fh:
+            fh.write("城市,数量\n北京,1\n")
+        df = read_any(path)
+        self.assertEqual(list(df.columns), ["城市", "数量"])
+
+    def test_read_any_falls_back_to_gbk(self):
+        path = os.path.join(self.tmpdir.name, "gbk.csv")
+        with open(path, "wb") as fh:
+            fh.write("城市,数量\n北京,1\n".encode("gbk"))
+        df = read_any(path)
+        self.assertEqual(list(df.columns), ["城市", "数量"])
+
+    def test_explicit_encoding_disables_fallback(self):
+        path = os.path.join(self.tmpdir.name, "gbk.csv")
+        with open(path, "wb") as fh:
+            fh.write("城市,数量\n北京,1\n".encode("gbk"))
+        with self.assertRaises(UnicodeDecodeError):
+            read_csv(path, encoding="utf-8")
+
 
 @unittest.skipUnless(_ANALYSIS_OK, _ANALYSIS_SKIP_REASON)
 class TestDataCleaner(unittest.TestCase):
@@ -196,9 +217,7 @@ class TestDataCleaner(unittest.TestCase):
         self.assertTrue(pd.api.types.is_numeric_dtype(cleaned["金额"]))
 
     def test_infer_types(self):
-        df = pd.DataFrame(
-            {"数值": [1, 2], "日期": ["2026-01-01", "2026-01-02"], "文本": ["a", "b"]}
-        )
+        df = pd.DataFrame({"数值": [1, 2], "日期": ["2026-01-01", "2026-01-02"], "文本": ["a", "b"]})
         types = DataCleaner(df).infer_types()
         self.assertEqual(types["数值"], "数值")
         self.assertEqual(types["日期"], "日期")
@@ -272,9 +291,7 @@ class TestCharts(unittest.TestCase):
         self.assert_png_saved(self._png_path("pie.png"))
 
     def test_plot_corr_heatmap(self):
-        plot_corr_heatmap(
-            self.df, method="pearson", save_path=self._png_path("corr.png")
-        )
+        plot_corr_heatmap(self.df, method="pearson", save_path=self._png_path("corr.png"))
         self.assert_png_saved(self._png_path("corr.png"))
 
     def test_plot_no_numeric_raises(self):

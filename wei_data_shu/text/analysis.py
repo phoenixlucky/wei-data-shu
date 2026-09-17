@@ -5,7 +5,17 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
-from ._deps import WordCloud, jieba, np, plt, require_analysis_deps
+from ._deps import require_analysis_deps
+
+
+def _load_text_deps() -> tuple[Any, Any, Any, Any]:
+    """按需加载分词 / 绘图依赖（模块导入时不拉起重依赖）。"""
+    import jieba
+    import numpy as np
+    from matplotlib import pyplot as plt
+    from wordcloud import WordCloud
+
+    return jieba, np, plt, WordCloud
 
 
 class TextAnalysis:
@@ -19,6 +29,7 @@ class TextAnalysis:
         return aggregated_text
 
     def compute_word_freq(self, text: str) -> Counter[str]:
+        jieba, _, _, _ = _load_text_deps()
         words = jieba.cut(text)
         return Counter(words)
 
@@ -28,6 +39,8 @@ class TextAnalysis:
         titles: list[str],
         save_path: str = "wordclouds.png",
     ) -> None:
+        _, np, plt, WordCloud = _load_text_deps()
+
         def create_ellipse_mask(width: int, height: int) -> Any:
             y, x = np.ogrid[-height // 2 : height // 2, -width // 2 : width // 2]
             mask = (x**2 / (width // 2) ** 2 + y**2 / (height // 2) ** 2) <= 1
@@ -37,6 +50,11 @@ class TextAnalysis:
         num_plots = len(word_freqs)
         if num_plots == 0:
             raise ValueError("word_freqs 不能为空")
+
+        from wei_data_shu.analysis.charts import resolve_font_path
+
+        font_path = resolve_font_path()
+        font_kwargs = {"font_path": font_path} if font_path else {}
 
         cols = 2
         rows = (num_plots + 1) // cols
@@ -50,9 +68,9 @@ class TextAnalysis:
                 width=400,
                 height=200,
                 max_words=200,
-                font_path="C:/Windows/Fonts/SimHei.ttf",
                 background_color="white",
                 mask=ellipse_mask,
+                **font_kwargs,
             ).generate_from_frequencies(word_freq)
 
             ax.imshow(wordcloud, interpolation="bilinear")
@@ -65,10 +83,9 @@ class TextAnalysis:
         for j in range(plotted, rows * cols):
             fig.delaxes(axes[j // cols, j % cols])
 
-        plt.axis("off")
         plt.tight_layout()
-        plt.savefig(save_path, bbox_inches="tight")
-        plt.close()
+        fig.savefig(save_path, bbox_inches="tight")
+        plt.close(fig)
 
 
 __all__ = ["TextAnalysis"]

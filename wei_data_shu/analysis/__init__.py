@@ -2,6 +2,8 @@
 
 from importlib import import_module
 
+from .._api import make_dir, make_getattr
+
 __all__ = [
     "read_csv",
     "read_json",
@@ -16,6 +18,7 @@ __all__ = [
     "plot_pie",
     "plot_corr_heatmap",
     "setup_chinese_font",
+    "resolve_font_path",
 ]
 
 _EXPORTS = {
@@ -32,13 +35,8 @@ _EXPORTS = {
     "plot_pie": ("wei_data_shu.analysis.charts", "plot_pie"),
     "plot_corr_heatmap": ("wei_data_shu.analysis.charts", "plot_corr_heatmap"),
     "setup_chinese_font": ("wei_data_shu.analysis.charts", "setup_chinese_font"),
+    "resolve_font_path": ("wei_data_shu.analysis.charts", "resolve_font_path"),
 }
 
-
-def __getattr__(name: str):
-    target = _EXPORTS.get(name)
-    if target is None:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-    module_name, attr_name = target
-    module = import_module(module_name)
-    return getattr(module, attr_name)
+__getattr__ = make_getattr(__name__, _EXPORTS)
+__dir__ = make_dir(__name__, _EXPORTS, extra=["__all__"])

@@ -4,7 +4,17 @@ from __future__ import annotations
 
 from typing import Any
 
-from ._deps import ARIMA, adfuller, np, pd, require_analysis_deps
+from ._deps import require_analysis_deps
+
+
+def _load_stats() -> tuple[Any, Any, Any, Any]:
+    """按需加载统计与数据处理依赖（模块导入时不拉起重依赖）。"""
+    import numpy as np
+    import pandas as pd
+    from statsmodels.tsa.arima.model import ARIMA
+    from statsmodels.tsa.stattools import adfuller
+
+    return np, pd, ARIMA, adfuller
 
 
 class TrendPredictor:
@@ -40,12 +50,15 @@ class TrendPredictor:
         else:
             self.reversed_market_trend_df = self.market_trend_df[self.smoothed_avg_col].reset_index(drop=True)
 
-        self.market_trend_df["趋势"] = self.market_trend_df[self.smoothed_avg_col].diff().apply(
-            lambda x: self.rise_label if x > 0 else (self.fall_label if x < 0 else self.flat_label)
+        self.market_trend_df["趋势"] = (
+            self.market_trend_df[self.smoothed_avg_col]
+            .diff()
+            .apply(lambda x: self.rise_label if x > 0 else (self.fall_label if x < 0 else self.flat_label))
         )
         self.is_stationary = self._check_stationarity(self.reversed_market_trend_df)
 
     def _check_stationarity(self, series):
+        _, _, _, adfuller = _load_stats()
         result = adfuller(series.dropna())
         return result[1] <= 0.05
 
@@ -62,10 +75,11 @@ class TrendPredictor:
         return f"color: {color}"
 
     def _predict(self):
+        np, pd, ARIMA, _ = _load_stats()
         model = ARIMA(self.reversed_market_trend_df, order=self.order)
         model_fit = model.fit()
 
-        forecast_result = model_fit.forecast(steps=self.steps, alpha=0.05)
+        forecast_result = model_fit.forecast(steps=self.steps)
         forecast = forecast_result.tolist() if isinstance(forecast_result, np.ndarray) else forecast_result
         forecast = [round(x, 4) for x in forecast]
 
@@ -74,11 +88,15 @@ class TrendPredictor:
         ].tolist()[0]
         forecast.insert(0, last_value)
 
-        future_dates = pd.date_range(start=self.market_trend_df[self.date_col].max(), periods=len(forecast), freq=self.freq)
+        future_dates = pd.date_range(
+            start=self.market_trend_df[self.date_col].max(), periods=len(forecast), freq=self.freq
+        )
         date_values = future_dates.strftime("%Y-%m-%d").tolist()
         future_forecast_df = pd.DataFrame({self.date_col: date_values, "预测值": forecast})
-        future_forecast_df["趋势"] = future_forecast_df["预测值"].diff().apply(
-            lambda x: self.rise_label if x > 0 else (self.fall_label if x < 0 else self.flat_label)
+        future_forecast_df["趋势"] = (
+            future_forecast_df["预测值"]
+            .diff()
+            .apply(lambda x: self.rise_label if x > 0 else (self.fall_label if x < 0 else self.flat_label))
         )
 
         if len(self.reversed_market_trend_df) > 10:
@@ -101,6 +119,7 @@ class TrendPredictor:
         return self._predict()
 
     def styled_forecast_data(self) -> Any:
+        _, pd, _, _ = _load_stats()
         future_forecast_df, forecast, str_forecast, future_dates = self._predict()
         future_forecast_df["预测值"] = future_forecast_df["预测值"].astype(str)
         future_forecast_df = future_forecast_df.set_index(self.date_col).T
@@ -120,6 +139,7 @@ class TrendPredictor:
         return info
 
     def cross_validate(self, test_size: float = 0.2) -> dict[str, Any]:
+        np, _, ARIMA, _ = _load_stats()
         if len(self.reversed_market_trend_df) < 10:
             return {"错误": "数据量不足，无法进行交叉验证"}
 
@@ -158,6 +178,7 @@ class MultipleTrendPredictor:
         self.steps = steps
 
     def predict(self) -> Any:
+        _, pd, ARIMA, _ = _load_stats()
         self.market_trend_df = self.market_trend_df.sort_index(ascending=True)
 
         def predict_next_days(series, days):

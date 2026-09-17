@@ -3,27 +3,28 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
-import openpyxl
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.worksheet import Worksheet
+from ._deps import require_excel_deps
+
+if TYPE_CHECKING:
+    from openpyxl.worksheet.worksheet import Worksheet
 
 
 def _require_xlwings():
     try:
         import xlwings as xw  # type: ignore
     except ImportError as exc:
-        raise ImportError(
-            "OpenExcel 依赖 xlwings。请安装可选依赖: pip install wei-data-shu[excel-client]"
-        ) from exc
+        raise ImportError("OpenExcel 依赖 xlwings。请安装可选依赖: pip install wei-data-shu[excel-client]") from exc
     return xw
 
 
 def create_workbook(file_path: Union[str, Path], default_sheet: str = "sheet1") -> None:
     if not default_sheet or not isinstance(default_sheet, str):
         raise ValueError("工作表名称必须是有效的字符串")
+
+    require_excel_deps("openpyxl")
+    import openpyxl
 
     try:
         wb = openpyxl.Workbook()
@@ -33,7 +34,7 @@ def create_workbook(file_path: Union[str, Path], default_sheet: str = "sheet1") 
         else:
             wb.create_sheet(title=default_sheet)
         Path(file_path).parent.mkdir(parents=True, exist_ok=True)
-        wb.save(file_path)
+        wb.save(str(file_path))
         wb.close()
     except Exception as exc:
         raise IOError(f"创建工作簿失败: {exc}") from exc
@@ -47,21 +48,24 @@ def _auto_range(
     end_row: int,
     end_col: int,
 ) -> Tuple[int, int]:
-    if use_explicit == 0 and data and len(data) > 0:
+    if use_explicit == 0 and len(data) > 0:
         calculated_end_row = len(data) + start_row - 1
-        calculated_end_col = len(data[0]) + start_col - 1 if data[0] else start_col
+        calculated_end_col = len(data[0]) + start_col - 1 if len(data[0]) else start_col
         return calculated_end_row, calculated_end_col
     return end_row, end_col
 
 
 def _apply_styles(
-    worksheet: Worksheet,
+    worksheet: "Worksheet",
     start_row: int,
     start_col: int,
     end_row: int,
     end_col: int,
     header_style: bool = True,
 ) -> None:
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+
     font = Font(name="Microsoft YaHei", size=11)
     header_fill = PatternFill(fill_type="solid", fgColor="0070C0")
     header_font = Font(name="Microsoft YaHei", size=11, bold=True, color="FFFFFF")

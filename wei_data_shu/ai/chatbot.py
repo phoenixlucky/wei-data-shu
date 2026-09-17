@@ -12,7 +12,7 @@ import requests
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover
-    tomllib = None
+    tomllib = None  # type: ignore[assignment]
 
 try:  # pragma: no cover
     import toml
@@ -82,7 +82,7 @@ class ChatBot:
 
     def send_message(self, user_input: str, stream: bool = True) -> str | None:
         self.messages.append({"role": "user", "content": user_input})
-        data_chat = {"model": self.model, "messages": self.messages, "stream": stream}
+        data_chat: dict[str, Any] = {"model": self.model, "messages": self.messages, "stream": stream}
 
         try:
             response_chat = requests.post(

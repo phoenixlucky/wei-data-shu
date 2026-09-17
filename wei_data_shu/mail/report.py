@@ -10,7 +10,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,8 @@ class DailyEmailReport:
         is_html: bool = False,
     ) -> None:
         """Compose the message body and optional attachments."""
+        if body is None:
+            raise ValueError("邮件正文不能为空")
         self.msg["From"] = self.email_username
         self.msg["To"] = ", ".join(self.receivers)
         self.msg["Subject"] = subject
@@ -95,11 +97,14 @@ class DailyEmailReport:
     ) -> None:
         """Send a daily report with today's date in the subject line."""
         subject = f"{title} - {datetime.date.today()}"
+        body: str
         if html_content is not None:
             body = html_content
             is_html = True
-        else:
+        elif text is not None:
             body = text
+        else:
+            raise ValueError("send_daily_report 需要 text 或 html_content 之一")
         self.set_email_content(subject, body, is_html=is_html)
         self.send_email()
 

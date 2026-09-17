@@ -56,9 +56,7 @@ class TestUtilsCli(unittest.TestCase):
 
         fake_openpyxl.load_workbook = lambda *a, **kw: _raise_import_error()
         stdout = io.StringIO()
-        with redirect_stdout(stdout), patch.dict(
-            "sys.modules", {"openpyxl": fake_openpyxl}
-        ):
+        with redirect_stdout(stdout), patch.dict("sys.modules", {"openpyxl": fake_openpyxl}):
             exit_code = main(["excel", "info", "book.xlsx"])
         self.assertEqual(exit_code, 1)
         self.assertIn("wei-data-shu[excel]", stdout.getvalue())

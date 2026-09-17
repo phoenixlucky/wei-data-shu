@@ -5,12 +5,7 @@ from __future__ import annotations
 import secrets
 import string
 
-_ALLOWED_CHARS = (
-    string.ascii_lowercase
-    + string.ascii_uppercase
-    + string.digits
-    + "!@#$%^&*"
-)
+_ALLOWED_CHARS = string.ascii_lowercase + string.ascii_uppercase + string.digits + "!@#$%^&*"
 _EXCLUDED_CHARS = set("iIl1o0O")
 _PASSWORD_CHARS = "".join(char for char in _ALLOWED_CHARS if char not in _EXCLUDED_CHARS)
 

@@ -339,7 +339,7 @@ wei-data-shu db query --user root --database shop --sql "SELECT * FROM users LIM
 | 文件 | `wei_data_shu.files` | `FileManagement` | 查找最新文件夹、复制文件、批量重命名、删除 |
 | 邮件 | `wei_data_shu.mail` | `DailyEmailReport`, `MailError` | SMTP/SSL 发送纯文本/HTML 邮件、附件 |
 | 文本 | `wei_data_shu.text` | `DateFormat`, `StringBaba`, `decrypt`, `eFormat`, `TextAnalysis`, `TrendPredictor`, `MultipleTrendPredictor`, `textCombing` | 日期格式化、字符串清洗、词频分析、词云、ARIMA 趋势预测、段落重组、存储过程参数拼接 |
-| 数据分析 | `wei_data_shu.analysis` | `read_csv`, `read_json`, `read_excel`, `read_any`, `DataCleaner`, `plot_line`, `plot_bar`, `plot_hist`, `plot_box`, `plot_scatter`, `plot_pie`, `plot_corr_heatmap`, `setup_chinese_font` | 通用数据读取、缺失值/重复值/异常值处理、归一化、类别编码、常用图表绘制、相关热力图、中文字体自动配置 |
+| 数据分析 | `wei_data_shu.analysis` | `read_csv`, `read_json`, `read_excel`, `read_any`, `DataCleaner`, `plot_line`, `plot_bar`, `plot_hist`, `plot_box`, `plot_scatter`, `plot_pie`, `plot_corr_heatmap`, `setup_chinese_font`, `resolve_font_path` | 通用数据读取、缺失值/重复值/异常值处理、归一化、类别编码、常用图表绘制、相关热力图、中文字体自动配置与字体路径解析 |
 | AI | `wei_data_shu.ai` | `ChatBot` | 对接 Ollama API，支持流式/非流式对话、聊天记录持久化 |
 | 工具 | `wei_data_shu.utils` | `fn_timer`, `generate_password`, `search_colors`, `color_records`, `mav_colors`, `in_notebook`, `read_text`, `bom_tolerant_encoding` | 函数计时器、安全密码生成、颜色检索、Jupyter 环境探测、BOM 安全的文本读取 |
 

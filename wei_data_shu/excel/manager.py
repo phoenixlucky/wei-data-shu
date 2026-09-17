@@ -3,16 +3,29 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
 
-import pandas as pd
-from openpyxl import Workbook, load_workbook
-from openpyxl.worksheet.worksheet import Worksheet
-
+from ._deps import require_excel_deps
 from ._helpers import _apply_styles, _auto_range, create_workbook
+
+if TYPE_CHECKING:
+    import pandas as pd
+    from openpyxl import Workbook
+    from openpyxl.worksheet.worksheet import Worksheet
 
 
 _MACRO_ENABLED_SUFFIXES = {".xlsm", ".xltm"}
+
+
+def load_workbook(*args: Any, **kwargs: Any) -> Any:
+    """延迟导入 openpyxl 的 ``load_workbook``。
+
+    保留模块级名字是为了让测试可以替换 ``wei_data_shu.excel.manager.load_workbook``，
+    同时避免 ``import wei_data_shu.excel`` 时就把 openpyxl 载入内存。
+    """
+    from openpyxl import load_workbook as _load_workbook
+
+    return _load_workbook(*args, **kwargs)
 
 
 class ExcelManager:
@@ -24,6 +37,7 @@ class ExcelManager:
         self._workbook: Optional[Workbook] = None
         if not self.file_path.parent.exists():
             raise FileNotFoundError(f"目录不存在: {self.file_path.parent}")
+        require_excel_deps("openpyxl")
         try:
             if not self.file_path.exists():
                 create_workbook(str(self.file_path), default_sheet)
@@ -82,9 +96,7 @@ class ExcelManager:
         if existing is not None:
             if existing == sheet_name:
                 raise ValueError(f"工作表 '{sheet_name}' 已存在")
-            raise ValueError(
-                f"工作表 '{existing}' 已存在（工作表名不区分大小写，'{sheet_name}' 与它冲突）"
-            )
+            raise ValueError(f"工作表 '{existing}' 已存在（工作表名不区分大小写，'{sheet_name}' 与它冲突）")
         return self.workbook.create_sheet(title=sheet_name, index=index)
 
     def delete_sheet(self, sheet_name: str) -> None:
@@ -106,12 +118,12 @@ class ExcelManager:
         apply_styles: bool = True,
         header_row: bool = True,
     ) -> None:
-        if not data:
+        if len(data) == 0:
             raise ValueError("数据不能为空")
         if end_row is None:
             end_row = start_row + len(data) - 1
         if end_col is None:
-            max_cols = max(len(row) for row in data) if data else 0
+            max_cols = max(len(row) for row in data) if len(data) else 0
             end_col = start_col + max_cols - 1
 
         worksheet = self._ensure_sheet(sheet_name)
@@ -196,12 +208,22 @@ class ExcelManager:
         self.write_sheet(sheet_name, data, start_row, start_col, apply_styles=True, header_row=include_header)
 
     def read_dataframe(self, sheet_name: str, start_row: int = 1, header_row: int = 1) -> pd.DataFrame:
+        """把工作表的 ``header_row`` 行作为表头读成 DataFrame。
+
+        ``start_row`` 是读取起点，``header_row`` 是表头所在的绝对行号；表头之前的
+        行会作为数据保留，便于处理带标题行的报表。
+        """
+        import pandas as pd
+
         data = self.read_sheet(sheet_name, start_row=start_row)
-        if not data:
+        if len(data) == 0:
             return pd.DataFrame()
-        headers = [str(h) for h in data[0]]
-        rows = data[1:] if len(data) > 1 else []
-        return pd.DataFrame(rows, columns=headers)  # type: ignore
+        offset = header_row - start_row
+        if offset < 0 or offset >= len(data):
+            raise ValueError(f"header_row={header_row} 不在读取范围 [{start_row}, {start_row + len(data) - 1}] 内")
+        headers = [str(h) for h in data[offset]]
+        rows = data[:offset] + data[offset + 1 :]
+        return pd.DataFrame(rows, columns=headers)
 
     def get_sheet_info(self, sheet_name: str) -> Dict[str, Any]:
         resolved = self._resolve_sheet_name(sheet_name)

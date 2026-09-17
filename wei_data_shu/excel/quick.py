@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, List, Optional, Sequence, Union
-
-import pandas as pd
+from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Union
 
 from .manager import ExcelManager
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 def quick_excel(
@@ -18,7 +19,7 @@ def quick_excel(
     start_col: int = 1,
 ) -> ExcelManager:
     manager = ExcelManager.create(file_path, sheet_name)
-    if data:
+    if data is not None and len(data) > 0:
         manager.fast_write(sheet_name, data, start_row, start_col)
         manager.save()
     return manager

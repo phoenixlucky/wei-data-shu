@@ -106,9 +106,11 @@ class TestDependencyMessages(unittest.TestCase):
     def test_import_failure_is_reported_as_such(self):
         from wei_data_shu.analysis import _deps
 
-        with patch.object(_deps, "_IMPORT_ERRORS", {"matplotlib": "ImportError: boom"}), patch.object(
-            _deps, "plt", None
-        ), patch.object(_deps, "find_spec", return_value=object()):
+        with (
+            patch.object(_deps, "_IMPORT_ERRORS", {"matplotlib": "ImportError: boom"}),
+            patch.object(_deps, "plt", None),
+            patch.object(_deps, "find_spec", return_value=object()),
+        ):
             with self.assertRaises(ImportError) as ctx:
                 _deps.require_deps("matplotlib")
 
@@ -119,8 +121,10 @@ class TestDependencyMessages(unittest.TestCase):
     def test_missing_dependency_keeps_install_hint(self):
         from wei_data_shu.analysis import _deps
 
-        with patch.object(_deps, "_IMPORT_ERRORS", {}), patch.object(_deps, "np", None), patch.object(
-            _deps, "find_spec", return_value=None
+        with (
+            patch.object(_deps, "_IMPORT_ERRORS", {}),
+            patch.object(_deps, "np", None),
+            patch.object(_deps, "find_spec", return_value=None),
         ):
             with self.assertRaises(ImportError) as ctx:
                 _deps.require_deps("numpy")

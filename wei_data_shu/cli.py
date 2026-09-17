@@ -70,7 +70,9 @@ def _build_parser() -> argparse.ArgumentParser:
     md2html_parser = subparsers.add_parser("md2html", help="Render a document as HTML")
     md2html_parser.add_argument("file", help="Document path (.md / .markdown / .docx / .pptx / .xlsx / .xlsm)")
     md2html_parser.add_argument("-o", "--output", help="Write HTML to a file instead of stdout")
-    md2html_parser.add_argument("--fragment", action="store_true", help="Emit a bare HTML fragment instead of a full page")
+    md2html_parser.add_argument(
+        "--fragment", action="store_true", help="Emit a bare HTML fragment instead of a full page"
+    )
     md2html_parser.add_argument("--title", action="store_true", help="Also render the document title as a heading")
 
     text_parser = subparsers.add_parser("text", help="Clean and renumber plain text")
@@ -615,42 +617,34 @@ def _run_db(args: argparse.Namespace) -> int:
     return 0
 
 
+_COMMANDS = {
+    "password": _run_password,
+    "colors": _run_colors,
+    "date": _run_date,
+    "excel": _run_excel,
+    "convert": _run_convert,
+    "md": _run_md,
+    "files": _run_files,
+    "md2html": _run_md2html,
+    "text": _run_text,
+    "table": _run_table,
+    "data": _run_data,
+    "plot": _run_plot,
+    "mail": _run_mail,
+    "db": _run_db,
+}
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     _ensure_utf8_stdout()
     parser = _build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "password":
-        return _run_password(args)
-    if args.command == "colors":
-        return _run_colors(args)
-    if args.command == "date":
-        return _run_date(args)
-    if args.command == "excel":
-        return _run_excel(args)
-    if args.command == "convert":
-        return _run_convert(args)
-    if args.command == "md":
-        return _run_md(args)
-    if args.command == "files":
-        return _run_files(args)
-    if args.command == "md2html":
-        return _run_md2html(args)
-    if args.command == "text":
-        return _run_text(args)
-    if args.command == "table":
-        return _run_table(args)
-    if args.command == "data":
-        return _run_data(args)
-    if args.command == "plot":
-        return _run_plot(args)
-    if args.command == "mail":
-        return _run_mail(args)
-    if args.command == "db":
-        return _run_db(args)
-
-    parser.print_help()
-    return 0
+    handler = _COMMANDS.get(args.command)
+    if handler is None:
+        parser.print_help()
+        return 0
+    return handler(args)
 
 
 __all__ = ["main"]

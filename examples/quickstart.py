@@ -1,8 +1,8 @@
 """快速上手示例：密码、颜色、日期、Excel（对应 README 快速开始）。"""
 
-from wei_data_shu.utils import generate_password, search_colors
-from wei_data_shu.text import DateFormat
 from wei_data_shu.excel import ExcelManager
+from wei_data_shu.text import DateFormat
+from wei_data_shu.utils import generate_password, search_colors
 
 
 def main() -> None:

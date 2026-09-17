@@ -175,9 +175,7 @@ def load_document(path: PathLike) -> "Document":
         from .sheet import read_xlsx
 
         return read_xlsx(source)
-    raise ValueError(
-        f"不支持的输入格式: {suffix or '(无扩展名)'!r}. 支持: {', '.join(READABLE_SUFFIXES)}"
-    )
+    raise ValueError(f"不支持的输入格式: {suffix or '(无扩展名)'!r}. 支持: {', '.join(READABLE_SUFFIXES)}")
 
 
 @dataclass

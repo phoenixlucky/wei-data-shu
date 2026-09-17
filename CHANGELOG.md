@@ -9,6 +9,40 @@ The format is based on Keep a Changelog and the project follows Semantic Version
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-17
+
+### Added
+
+- `wei_data_shu.analysis.resolve_font_path()`：返回可用的中文字体文件路径，供词云等场景使用
+- `textCombing(separator_config=...)`：显式指定标点配置文件，替代原先隐式的 `./character.json`
+- 共享可选依赖核心 `wei_data_shu._deps`：统一「依赖名 → 模块名」映射与安装提示，供各领域复用
+- `pyproject.toml` 新增 `dev` extra 与 `[tool.ruff]` / `[tool.mypy]` 配置
+- CI 新增 lint（`ruff check` / `ruff format --check`）与 `mypy` 作业、Windows 测试作业；发布流程新增 tag 与版本一致性校验及发布前测试
+
+### Changed
+
+- 依赖守卫统一：`analysis` / `docs` / `text` 三个 `_deps` 委托共享核心；`text` 改为惰性探测，`TrendPredictor` / `TextAnalysis` 不再在模块导入时拉起 `jieba` / `wordcloud` / `statsmodels`
+- `wei_data_shu.excel` 延迟到调用时导入 `pandas` / `openpyxl`，缺失时给出 `pip install wei-data-shu[excel]` 提示
+- 领域包 `__init__` 的惰性 `__getattr__` / `__dir__` 收敛到 `_api.make_getattr` / `_api.make_dir`
+- CLI `main()` 改为命令分发表，去掉长 `if/elif` 链
+- 全仓库按 `ruff format` 统一格式
+
+### Fixed
+
+- `TrendPredictor` 向 statsmodels 的 `forecast` 传入不受支持的 `alpha` 参数，导致趋势预测直接抛 `TypeError`
+- `ExcelOperation.split_table` 未关闭 `pd.ExcelFile`，在 Windows 上会锁住工作簿
+- `ExcelManager.read_dataframe(header_row=...)` 参数此前被忽略，始终以第一行为表头
+- `ExcelManager.write_sheet` / `quick_excel` 对 DataFrame / ndarray 使用真值判断会抛 “truth value is ambiguous”
+- `analysis.read_csv` / `read_json` 默认改用 `utf-8-sig` 并在解码失败时回退 `gbk`，BOM 与 Excel 导出的中文 CSV 可直接读取
+- `DailyEmailReport.set_email_content` 在正文为 `None` 时抛 `ValueError`，而不是把 `None` 交给 `MIMEText`
+- 调色板中重复的 `#9575CD` / `#7986CB` 条目导致 `search_colors` 返回重复项
+- `textCombing.process_text` 不再逐行从当前工作目录读取 `character.json`，缺失配置改为显式参数且只读取一次
+- `wei_data_shu/__main__.py` 增加 `if __name__ == "__main__"` 守卫
+
+### Removed
+
+- `tests/__init__.py` 中与环境无关的 ASCII 横幅
+
 ## [0.9.2] - 2026-09-16
 
 ### Changed

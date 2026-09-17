@@ -9,7 +9,45 @@ permissions:
   contents: read
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Check tag matches package version
+        run: |
+          python - <<'PY'
+          import os
+          import pathlib
+          import sys
+          import tomllib
+
+          version = tomllib.loads(
+              pathlib.Path("pyproject.toml").read_text(encoding="utf-8")
+          )["project"]["version"]
+          tag = os.environ["GITHUB_REF_NAME"]
+          expected = f"wei-data-shu-{version}"
+          if tag != expected:
+              sys.exit(f"tag {tag!r} 与 pyproject.toml 的版本 {version!r} 不一致（应为 {expected!r}）")
+          print(f"tag {tag} matches package version {version}")
+          PY
+
+      - name: Install package + extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[analysis,excel,database,docs]"
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -p "test_*.py"
+
   publish:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

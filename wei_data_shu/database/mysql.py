@@ -29,7 +29,8 @@ class MySQLDatabase:
 
     def __init__(self, config: Mapping[str, Any]) -> None:
         self.config = config
-        self.connection: mysql.connector.MySQLConnection | None = None
+        # mysql.connector.connect() 可能返回连接池/抽象连接，具体类型随版本而变，这里按 Any 处理
+        self.connection: Any = None
         self.connect()
 
     def __enter__(self) -> "MySQLDatabase":
@@ -63,7 +64,7 @@ class MySQLDatabase:
             self.connection = None
             logger.info("MySQL connection closed")
 
-    def _require_connection(self) -> mysql.connector.MySQLConnection:
+    def _require_connection(self) -> Any:
         if self.connection is None:
             raise MySQLDatabaseError("数据库未连接，请先调用 connect()")
         return self.connection
@@ -103,9 +104,7 @@ class MySQLDatabase:
         finally:
             cursor.close()
 
-    def fetch_query(
-        self, query: str, params: Any = None, dictionary: bool = False
-    ) -> list[Any]:
+    def fetch_query(self, query: str, params: Any = None, dictionary: bool = False) -> list[Any]:
         """Execute a query and return all rows.
 
         An empty result (no rows) is returned as ``[]``; a failed query raises
@@ -123,16 +122,12 @@ class MySQLDatabase:
         finally:
             cursor.close()
 
-    def call_procedure(
-        self, proc_name: str, params: Any = None
-    ) -> list[Mapping[str, Any]] | None:
+    def call_procedure(self, proc_name: str, params: Any = None) -> list[Mapping[str, Any]] | None:
         """Call a stored procedure and return its result sets (or ``None``)."""
         cursor = self._cursor(dictionary=True)
         try:
             if params is not None:
-                args: Iterable[Any] = (
-                    params if isinstance(params, (list, tuple)) else (params,)
-                )
+                args: Iterable[Any] = params if isinstance(params, (list, tuple)) else (params,)
                 cursor.callproc(proc_name, args)
             else:
                 cursor.callproc(proc_name)

@@ -64,5 +64,22 @@ class TestUtilsDomain(unittest.TestCase):
         mock_import.assert_called_once_with("wei_data_shu.utils.passwords")
 
 
+class TestColorPalette(unittest.TestCase):
+    def test_color_records_have_unique_hex_and_index(self):
+        from wei_data_shu.utils import color_records
+
+        hexes = [record["hex"] for record in color_records]
+        indices = [record["index"] for record in color_records]
+        self.assertEqual(len(hexes), len(set(hexes)))
+        self.assertEqual(indices, list(range(1, len(hexes) + 1)))
+
+    def test_search_colors_returns_no_duplicates(self):
+        from wei_data_shu.utils import search_colors
+
+        results = search_colors("a")
+        indices = [record["index"] for record in results]
+        self.assertEqual(len(indices), len(set(indices)))
+
+
 if __name__ == "__main__":
     unittest.main()

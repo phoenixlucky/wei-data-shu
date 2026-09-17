@@ -48,8 +48,7 @@ def _table_html(table: Table) -> str:
         body = rows[1:]
     if body:
         body_rows = "".join(
-            "<tr>" + "".join(f'<td style="{_CELL_STYLE}">{_text(cell)}</td>' for cell in row) + "</tr>"
-            for row in body
+            "<tr>" + "".join(f'<td style="{_CELL_STYLE}">{_text(cell)}</td>' for cell in row) + "</tr>" for row in body
         )
         parts.append(f"<tbody>{body_rows}</tbody>")
     parts.append("</table>")

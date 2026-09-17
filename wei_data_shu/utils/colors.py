@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 mav_colors = [
     "#60ACFC",
     "#32D3EB",
@@ -36,8 +38,6 @@ mav_colors = [
     "#FF7043",
     "#D4E157",
     "#FFEB3B",
-    "#9575CD",
-    "#7986CB",
     "#E57373",
     "#FFF176",
     "#FFB74D",
@@ -78,8 +78,6 @@ _COLOR_ZH_NAMES = [
     "日落橙",
     "青柠绿",
     "柠檬黄",
-    "淡紫罗兰",
-    "雾霾蓝",
     "豆沙红",
     "奶油黄",
     "木瓜橙",
@@ -120,8 +118,6 @@ _COLOR_EN_NAMES = [
     "sunset orange",
     "lime green",
     "lemon yellow",
-    "soft violet",
-    "mist blue",
     "dusty rose",
     "butter yellow",
     "papaya orange",
@@ -155,13 +151,9 @@ def search_colors(query: str | None = None) -> list[dict[str, object]]:
 
     results: list[dict[str, object]] = []
     for record in color_records:
-        haystack = {
-            record["hex"].lower(),
-            str(record["name"]).lower(),
-            str(record["name_zh"]),
-        }
-        aliases = {str(alias).lower() for alias in record["aliases"]}
-        if any(normalized in candidate for candidate in haystack | aliases):
+        raw_aliases = cast("set[str]", record["aliases"])
+        aliases = {alias.lower() for alias in raw_aliases}
+        if any(normalized in candidate for candidate in aliases):
             results.append(record)
     return results
 

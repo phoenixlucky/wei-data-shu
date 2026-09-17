@@ -5,14 +5,17 @@ Markdown / HTML 渲染只依赖标准库，因此始终可用；Word / PowerPoin
 
 可用性用 :func:`importlib.util.find_spec` 探测——它只查找模块位置、不执行模块代码，
 因此 ``import wei_data_shu.docs`` 不会顺带把这些重依赖载入 ``sys.modules``；
-真正的 import 推迟到各后端函数内部。
+真正的 import 推迟到各后端函数内部。提示信息统一由 :mod:`wei_data_shu._deps` 拼装。
 """
 
 from __future__ import annotations
 
 from importlib.util import find_spec
 
-_INSTALL_HINT = "pip install wei-data-shu[docs]"
+from .._deps import install_hint, missing_message
+
+_EXTRA = "docs"
+_INSTALL_HINT = install_hint(_EXTRA)
 
 #: 逻辑名 -> 可导入的模块名（供 find_spec 探测）
 _DEP_MODULES = {
@@ -35,8 +38,7 @@ def require_deps(*dep_names: str) -> None:
     """Raise a friendly ImportError if any required optional dependency is missing."""
     missing = [name for name in dep_names if not _is_available(name)]
     if missing:
-        missing_list = ", ".join(missing)
-        raise ImportError(f"当前功能缺少依赖: {missing_list}. 请安装可选依赖: {_INSTALL_HINT}")
+        raise ImportError(missing_message(missing, _EXTRA, installed=_is_available))
 
 
 def has_deps(*dep_names: str) -> bool:

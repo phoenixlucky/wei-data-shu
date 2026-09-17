@@ -6,10 +6,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator, List, Optional, Sequence, Union
 
+from ..text.core import StringBaba
 from ._helpers import _require_xlwings
 from .manager import ExcelManager
-from ..text.core import StringBaba
-
 
 _MACRO_SECURITY_LEVELS = {
     "enable": 1,  # msoAutomationSecurityLow

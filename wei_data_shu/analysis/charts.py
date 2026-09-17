@@ -14,7 +14,7 @@ import logging
 from typing import Any, Iterable
 
 from ..utils.notebook import in_notebook
-from ._deps import np, pd, plt, require_deps
+from ._deps import plt, require_deps
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -70,6 +70,25 @@ def setup_chinese_font(preferred: Iterable[str] | None = None) -> str | None:
     plt.rcParams["font.sans-serif"] = sans
     plt.rcParams["axes.unicode_minus"] = False
     return matched
+
+
+def resolve_font_path(preferred: Iterable[str] | None = None) -> str | None:
+    """返回中文字体的实际文件路径，供 ``WordCloud(font_path=...)`` 等场景使用。
+
+    复用 :func:`setup_chinese_font` 的检测结果；未找到中文字体或 matplotlib
+    不可用时返回 ``None``，调用方应退回默认字体而不是硬编码 Windows 路径。
+    """
+    if plt is None:
+        return None
+    matched = setup_chinese_font(preferred)
+    if matched is None:
+        return None
+    from matplotlib import font_manager
+
+    try:
+        return font_manager.findfont(font_manager.FontProperties(family=matched), fallback_to_default=False)
+    except (ValueError, RuntimeError):
+        return None
 
 
 # 模块加载时自动配置一次（matplotlib 未安装时静默跳过）
@@ -273,6 +292,7 @@ def plot_corr_heatmap(
 
 __all__ = [
     "setup_chinese_font",
+    "resolve_font_path",
     "plot_line",
     "plot_bar",
     "plot_hist",

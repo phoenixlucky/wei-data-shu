@@ -7,7 +7,9 @@ multiple import surfaces.
 
 from __future__ import annotations
 
-from typing import Dict, Iterable, Tuple
+import sys
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any, Dict, Tuple
 
 ExportTarget = Tuple[str, str | None]
 ExportMap = Dict[str, ExportTarget]
@@ -48,6 +50,39 @@ def domain_all(*domains: str) -> list[str]:
     return sorted(set(names))
 
 
+def make_getattr(module_name: str, exports: Mapping[str, ExportTarget]) -> Callable[[str], Any]:
+    """为领域包生成惰性 ``__getattr__``。
+
+    ``import_module`` 是运行时从目标模块的全局命名空间取的，因此
+    ``patch("wei_data_shu.<domain>.import_module")`` 仍然可以拦截。
+    """
+
+    def __getattr__(name: str) -> Any:
+        target = exports.get(name)
+        if target is None:
+            raise AttributeError(f"module {module_name!r} has no attribute {name!r}")
+        module_path, attr_name = target
+        import_module = getattr(sys.modules[module_name], "import_module")
+        module = import_module(module_path)
+        return module if attr_name is None else getattr(module, attr_name)
+
+    return __getattr__
+
+
+def make_dir(
+    module_name: str,
+    exports: Mapping[str, ExportTarget],
+    extra: Iterable[str] = (),
+) -> Callable[[], list[str]]:
+    """为领域包生成 ``__dir__``，把惰性导出的名字也列入。"""
+
+    def __dir__() -> list[str]:
+        module = sys.modules[module_name]
+        return sorted(set(module.__dict__.keys()) | set(exports) | set(extra))
+
+    return __dir__
+
+
 __all__ = [
     "DOMAIN_EXPORTS",
     "ROOT_EXPORTS",
@@ -56,4 +91,6 @@ __all__ = [
     "domain_all",
     "export_names",
     "flatten_exports",
+    "make_dir",
+    "make_getattr",
 ]

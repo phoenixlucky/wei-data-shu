@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Union
 
-import pandas as pd
+from ._deps import require_excel_deps
 
 logger = logging.getLogger(__name__)
 
@@ -17,24 +17,28 @@ class ExcelOperation:
         self.output_folder = Path(output_folder)
 
     def split_table(self, sheet_names: Optional[List[str]] = None) -> List[Path]:
+        require_excel_deps("pandas", "openpyxl")
+        import pandas as pd
+
         if not self.input_file.exists():
             raise FileNotFoundError(f"输入文件不存在: {self.input_file}")
         self.output_folder.mkdir(parents=True, exist_ok=True)
-        excel_file = pd.ExcelFile(self.input_file)
-        sheets_to_process = sheet_names or excel_file.sheet_names
         generated_files = []
 
-        for sheet_name in sheets_to_process:
-            if sheet_name not in excel_file.sheet_names:
-                logger.warning("工作表 '%s' 不存在，已跳过", sheet_name)
-                continue
-            try:
-                df = pd.read_excel(self.input_file, sheet_name=sheet_name)
-                output_file = self.output_folder / f"{sheet_name}.xlsx"
-                df.to_excel(output_file, index=False, engine="openpyxl")
-                generated_files.append(output_file)
-            except Exception as exc:
-                logger.warning("拆分工作表 '%s' 失败: %s", sheet_name, exc)
+        # 用 with 关闭 ExcelFile：否则文件句柄会一直占用，Windows 上会锁住工作簿。
+        with pd.ExcelFile(self.input_file) as excel_file:
+            sheets_to_process = sheet_names or excel_file.sheet_names
+            for sheet_name in sheets_to_process:
+                if sheet_name not in excel_file.sheet_names:
+                    logger.warning("工作表 '%s' 不存在，已跳过", sheet_name)
+                    continue
+                try:
+                    df = excel_file.parse(sheet_name)
+                    output_file = self.output_folder / f"{sheet_name}.xlsx"
+                    df.to_excel(output_file, index=False, engine="openpyxl")
+                    generated_files.append(output_file)
+                except Exception as exc:
+                    logger.warning("拆分工作表 '%s' 失败: %s", sheet_name, exc)
         return generated_files
 
     def merge_tables(
@@ -43,6 +47,9 @@ class ExcelOperation:
         output_file: Union[str, Path],
         sheet_name: str = "Merged",
     ) -> Path:
+        require_excel_deps("pandas", "openpyxl")
+        import pandas as pd
+
         all_data = []
         for file_path in input_files:
             path = Path(file_path)
@@ -64,6 +71,9 @@ class ExcelOperation:
         return output_path
 
     def convert_to_csv(self, sheet_name: Optional[str] = None, encoding: str = "utf-8-sig") -> Path:
+        require_excel_deps("pandas", "openpyxl")
+        import pandas as pd
+
         if not self.input_file.exists():
             raise FileNotFoundError(f"输入文件不存在: {self.input_file}")
         df = pd.read_excel(self.input_file, sheet_name=sheet_name or 0)

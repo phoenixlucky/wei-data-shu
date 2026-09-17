@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wei-data-shu"
-version = "0.9.2"
+version = "0.10.0"
 description = "wei-data-shu: 面向办公自动化和数据处理的 Python 工具库 | Domain-oriented office automation & data utility toolkit for Python"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -59,6 +59,12 @@ docs = [
   "python-pptx>=0.6.23",
   "openpyxl>=3.1"
 ]
+dev = [
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "build>=1.2",
+  "coverage>=7.6"
+]
 
 [project.urls]
 Homepage = "https://github.com/phoenixlucky/wei-data-shu"
@@ -73,3 +79,23 @@ wei_data_shu = ["py.typed"]
 where = ["."]
 include = ["wei_data_shu*"]
 exclude = ["tests*", "build*", "dist*", "*.egg-info*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+# 不把 Markdown 里的示例代码块纳入格式化（README / USAGE 保留手工对齐的注释）
+extend-exclude = ["build", "dist", "*.md"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "W", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# 领域包 __init__ 里的 import_module 由惰性 __getattr__ 在运行时取用
+"wei_data_shu/**/__init__.py" = ["F401"]
+"tests/**/__init__.py" = ["F401"]
+
+[tool.mypy]
+# 用 3.12 作为类型检查目标：与 CI 的 mypy 作业一致，且能解析新版第三方存根
+python_version = "3.12"
+ignore_missing_imports = true
+files = ["wei_data_shu"]

@@ -2,6 +2,8 @@
 
 from importlib import import_module
 
+from .._api import make_dir, make_getattr
+
 __all__ = [
     "fn_timer",
     "mav_colors",
@@ -24,11 +26,5 @@ _EXPORTS = {
     "bom_tolerant_encoding": ("wei_data_shu.utils.textio", "bom_tolerant_encoding"),
 }
 
-
-def __getattr__(name: str):
-    target = _EXPORTS.get(name)
-    if target is None:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-    module_name, attr_name = target
-    module = import_module(module_name)
-    return getattr(module, attr_name)
+__getattr__ = make_getattr(__name__, _EXPORTS)
+__dir__ = make_dir(__name__, _EXPORTS, extra=["__all__"])

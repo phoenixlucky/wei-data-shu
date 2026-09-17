@@ -229,18 +229,46 @@ class TestCliMailCommand(unittest.TestCase):
         stdout = io.StringIO()
         with redirect_stdout(stdout), patch.dict("os.environ", {}, clear=True):
             exit_code = main(
-                ["mail", "send", "--host", "smtp.example.com", "--user", "a@b.c", "-t", "z@y.z", "-s", "Hi", "-b", "body"]
+                [
+                    "mail",
+                    "send",
+                    "--host",
+                    "smtp.example.com",
+                    "--user",
+                    "a@b.c",
+                    "-t",
+                    "z@y.z",
+                    "-s",
+                    "Hi",
+                    "-b",
+                    "body",
+                ]
             )
         self.assertEqual(exit_code, 1)
         self.assertIn("WEI_DATA_SHU_MAIL_PASSWORD", stdout.getvalue())
 
     def test_send_reads_password_from_environment(self):
         stdout = io.StringIO()
-        with redirect_stdout(stdout), patch.dict("os.environ", {"WEI_DATA_SHU_MAIL_PASSWORD": "pw"}), patch(
-            "wei_data_shu.mail.report.DailyEmailReport.send_email"
-        ) as send_email:
+        with (
+            redirect_stdout(stdout),
+            patch.dict("os.environ", {"WEI_DATA_SHU_MAIL_PASSWORD": "pw"}),
+            patch("wei_data_shu.mail.report.DailyEmailReport.send_email") as send_email,
+        ):
             exit_code = main(
-                ["mail", "send", "--host", "smtp.example.com", "--user", "a@b.c", "-t", "z@y.z", "-s", "Hi", "-b", "body"]
+                [
+                    "mail",
+                    "send",
+                    "--host",
+                    "smtp.example.com",
+                    "--user",
+                    "a@b.c",
+                    "-t",
+                    "z@y.z",
+                    "-s",
+                    "Hi",
+                    "-b",
+                    "body",
+                ]
             )
         self.assertEqual(exit_code, 0)
         send_email.assert_called_once()
@@ -303,7 +331,20 @@ class TestCliMailCommand(unittest.TestCase):
         stdout = io.StringIO()
         with redirect_stdout(stdout):
             exit_code = main(
-                ["mail", "send", "--host", "smtp.example.com", "--user", "a@b.c", "--password", "pw", "-t", "z@y.z", "-s", "Hi"]
+                [
+                    "mail",
+                    "send",
+                    "--host",
+                    "smtp.example.com",
+                    "--user",
+                    "a@b.c",
+                    "--password",
+                    "pw",
+                    "-t",
+                    "z@y.z",
+                    "-s",
+                    "Hi",
+                ]
             )
         self.assertEqual(exit_code, 1)
         self.assertIn("缺少正文", stdout.getvalue())

@@ -996,12 +996,16 @@ plot_corr_heatmap(df, method="pearson", save_path="corr.png")    # 相关热力�
 需要自定义字体时，可手动调用：
 
 ```python
-from wei_data_shu.analysis import setup_chinese_font
+from wei_data_shu.analysis import resolve_font_path, setup_chinese_font
 
 setup_chinese_font()                          # 自动检测
 setup_chinese_font(["Noto Sans CJK SC"])      # 指定候选字体
 setup_chinese_font(["SimHei"])                # 返回命中的字体名，未找到返回 None
+
+resolve_font_path()                            # 返回字体文件路径（如 WordCloud(font_path=...)），未找到返回 None
 ```
+
+需要字体文件的场景（例如 `TextAnalysis.plot_wordclouds` 生成词云）会自动调用 `resolve_font_path()`，不再硬编码 Windows 路径，因此在 macOS / Linux 上同样可用。
 
 ---
 

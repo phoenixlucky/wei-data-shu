@@ -1,64 +1,22 @@
-"""Optional dependency helpers for text analytics modules."""
+"""Optional dependency helpers for text analytics modules.
 
-from typing import Any, cast
+这里只做 ``find_spec`` 探测，不在模块导入时拉起 ``jieba`` / ``wordcloud`` /
+``statsmodels`` 等重依赖；真正的 import 推迟到 :mod:`wei_data_shu.text.forecast`
+与 :mod:`wei_data_shu.text.analysis` 的方法内部。
+"""
 
-try:
-    import jieba
-except ImportError:  # pragma: no cover
-    jieba = cast(Any, None)
+from __future__ import annotations
 
-try:
-    import numpy as np
-except ImportError:  # pragma: no cover
-    np = cast(Any, None)
+from .._deps import require_deps
 
-try:
-    import pandas as pd
-except ImportError:  # pragma: no cover
-    pd = cast(Any, None)
-
-try:
-    from matplotlib import pyplot as plt
-except ImportError:  # pragma: no cover
-    plt = cast(Any, None)
-
-try:
-    from statsmodels.tsa.arima.model import ARIMA
-    from statsmodels.tsa.stattools import adfuller
-except ImportError:  # pragma: no cover
-    ARIMA = cast(Any, None)
-    adfuller = cast(Any, None)
-
-try:
-    from wordcloud import WordCloud
-except ImportError:  # pragma: no cover
-    WordCloud = cast(Any, None)
+_EXTRA = "analysis"
 
 
 def require_analysis_deps(*dep_names: str) -> None:
-    available = {
-        "jieba": jieba,
-        "numpy": np,
-        "pandas": pd,
-        "matplotlib": plt,
-        "statsmodels": ARIMA,
-        "wordcloud": WordCloud,
-    }
-    missing = [name for name in dep_names if available.get(name) is None]
-    if missing:
-        missing_list = ", ".join(missing)
-        raise ImportError(
-            f"当前功能缺少依赖: {missing_list}. 请安装可选依赖: pip install wei-data-shu[analysis]"
-        )
+    """当前功能所需的分析依赖缺失时抛出带安装提示的 :class:`ImportError`。"""
+    require_deps(*dep_names, extra=_EXTRA)
 
 
 __all__ = [
-    "jieba",
-    "np",
-    "pd",
-    "plt",
-    "ARIMA",
-    "adfuller",
-    "WordCloud",
     "require_analysis_deps",
 ]

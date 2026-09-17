@@ -2,17 +2,14 @@
 
 from importlib import import_module
 
+from .._api import make_dir, make_getattr
+
 __all__ = ["MySQLDatabase", "MySQLDatabaseError"]
 
 _EXPORTS = {
-    "MySQLDatabase": "MySQLDatabase",
-    "MySQLDatabaseError": "MySQLDatabaseError",
+    "MySQLDatabase": ("wei_data_shu.database.mysql", "MySQLDatabase"),
+    "MySQLDatabaseError": ("wei_data_shu.database.mysql", "MySQLDatabaseError"),
 }
 
-
-def __getattr__(name: str):
-    target = _EXPORTS.get(name)
-    if target is None:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-    module = import_module("wei_data_shu.database.mysql")
-    return getattr(module, target)
+__getattr__ = make_getattr(__name__, _EXPORTS)
+__dir__ = make_dir(__name__, _EXPORTS, extra=["__all__"])

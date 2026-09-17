@@ -13,7 +13,6 @@ from wei_data_shu.docs import (
     CodeBlock,
     Document,
     Heading,
-    PageBreak,
     Paragraph,
     Table,
     build,
@@ -218,11 +217,7 @@ class TestHtmlRendering(unittest.TestCase):
         self.assertIn("电商", html)
 
     def test_text_is_escaped(self):
-        document = (
-            Document()
-            .add_paragraph("<script>alert(1)</script>")
-            .add_table([["<b>表头</b>"], ["<i>值</i>"]])
-        )
+        document = Document().add_paragraph("<script>alert(1)</script>").add_table([["<b>表头</b>"], ["<i>值</i>"]])
         html = render_html(document)
         self.assertNotIn("<script>", html)
         self.assertIn("&lt;script&gt;", html)

@@ -17,7 +17,6 @@ from pathlib import Path
 from typing import Any
 
 from ..utils.textio import read_text
-
 from .model import (
     BulletList,
     CodeBlock,

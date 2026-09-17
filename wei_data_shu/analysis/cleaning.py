@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-from ._deps import np, pd, require_deps
+from ._deps import pd, require_deps
 
 _STRATEGIES = ("mean", "median", "mode", "ffill", "bfill")
 _SCALE_METHODS = ("minmax", "zscore")
