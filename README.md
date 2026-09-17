@@ -9,7 +9,7 @@
 **English:** A domain-oriented toolkit for everyday office automation and data work — Excel, Word / PowerPoint, MySQL, email, file handling, text analytics, charts, trend forecasting and local LLM chat. Nine domain packages, lazily imported, no startup overhead.
 
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![PyPI version](https://img.shields.io/pypi/v/wei-data-shu?color=blue)](https://pypi.org/project/wei-data-shu/)
+[![PyPI version](https://img.shields.io/pypi/v/wei-data-shu?color=blue&cacheSeconds=3600)](https://pypi.org/project/wei-data-shu/)
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 [![Development Status](https://img.shields.io/badge/status-beta-yellow)](https://pypi.org/project/wei-data-shu/)
 [![GitHub stars](https://img.shields.io/github/stars/phoenixlucky/wei-data-shu?logo=github)](https://github.com/phoenixlucky/wei-data-shu)
